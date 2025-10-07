@@ -7,6 +7,17 @@ class WelcomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String greeting;
+    final int hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      greeting = 'صباح الخير';
+    } else if (hour >= 12 && hour < 17) {
+      greeting = 'نهارك سعيد';
+    } else if (hour >= 17 && hour < 21) {
+      greeting = 'مساء الخير';
+    } else {
+      greeting = 'مساءً سعيداً';
+    }
     return Container(
       margin: const EdgeInsets.all(AppConstants.spacingLG),
       padding: const EdgeInsets.all(AppConstants.spacingLG),
@@ -22,7 +33,7 @@ class WelcomeHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'مرحباً بك في WEDLY',
+                  '$greeting ',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: AppColors.white,
                     fontWeight: FontWeight.bold,
@@ -30,7 +41,7 @@ class WelcomeHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: AppConstants.spacingSM),
                 Text(
-                  'احجز أفضل خدمات الزفاف بسهولة وفخامة',
+                  'اكتشف أفضل خدمات الزفاف بسهولة وفخامة وفق احتياجك اليوم',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppColors.white.withOpacity(0.9),
                   ),

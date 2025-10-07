@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/widgets/minimal_headline.dart';
 import '../../../favorites/presentation/pages/favorites_list_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -19,26 +20,8 @@ class ProfilePage extends StatelessWidget {
             pinned: true,
             backgroundColor: AppColors.white,
             elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.spacingMD,
-                  vertical: AppConstants.spacingSM,
-                ),
-                decoration: BoxDecoration(
-                  gradient: AppColors.goldenGradient,
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                  boxShadow: AppColors.goldenShadowSmall,
-                ),
-                child: Text(
-                  'الملف الشخصي',
-                  style: const TextStyle(
-                    fontSize: AppConstants.fontSizeXL,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
+            flexibleSpace: const FlexibleSpaceBar(
+              title: MinimalHeadline(title: 'الملف الشخصي'),
               titlePadding: const EdgeInsets.only(
                 left: AppConstants.spacingLG,
                 bottom: AppConstants.spacingMD,

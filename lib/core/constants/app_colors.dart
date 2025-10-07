@@ -103,4 +103,6 @@ class AppColors {
       offset: Offset(0, 4),
     ),
   ];
+
+  static var golden;
 }
