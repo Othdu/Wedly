@@ -9,9 +9,8 @@ import '../bloc/home_state.dart';
 import '../bloc/home_event.dart';
 import '../widgets/featured_service_card.dart';
 import '../widgets/service_category_card.dart';
-import '../widgets/search_bar_widget.dart';
-import '../widgets/welcome_header.dart';
-import '../../../../shared/widgets/minimal_headline.dart';
+import '../../../../shared/widgets/app_header.dart';
+import '../../../../shared/widgets/quick_actions.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
 import '../../../vendors/presentation/pages/vendors_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
@@ -23,6 +22,7 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
@@ -107,84 +107,67 @@ class HomeContent extends StatelessWidget {
           if (state is HomeLoaded) {
             return CustomScrollView(
               slivers: [
-                // --- App Bar ---
-                SliverAppBar(
-                  expandedHeight: 120,
-                  floating: false,
-                  pinned: true,
-                  backgroundColor: AppColors.white,
-                  elevation: 0,
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: const MinimalHeadline(title: AppConstants.appName),
-                    titlePadding: const EdgeInsets.only(
-                      left: AppConstants.spacingLG,
-                      bottom: AppConstants.spacingMD,
-                    ),
-                  ),
-                  actions: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.person_outline,
-                        color: AppColors.primaryGolden,
+                // --- Header Section ---
+                SliverToBoxAdapter(
+                  child: AppHeader(
+                    welcomeText: 'مرحباً بك!',
+                    subtitleText: 'مستعد ليوم جديد من التخطيط؟',
+                    featureTitle: '',
+                    logo: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Image(
+                          image: AssetImage('assets/images/logo.png'),
+                          width: 50,
+                          height: 50,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: AppConstants.spacingSM),
-                  ],
-                ),
-
-                // --- Welcome Header ---
-                const SliverToBoxAdapter(child: WelcomeHeader()),
-
-                // --- Search Bar ---
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.spacingLG,
-                    ),
-                    child: SearchBarWidget(
-                      onSearch: (query) {
-                        context
-                            .read<HomeBloc>()
-                            .add(HomeSearchRequested(query: query));
-                      },
-                    ),
                   ),
                 ),
+
+                // --- Quick Actions ---
+                
 
                 const SliverToBoxAdapter(
                   child: SizedBox(height: AppConstants.spacingLG),
                 ),
 
-                // --- Main Feature Cards ---
-               // --- Main Feature Cards ---
-SliverToBoxAdapter(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'خدماتنا الرئيسية',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: AppConstants.spacingMD),
+                // --- Main Services Section ---
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.spacingLG,
+                    ),
+                    child: Text(
+                      'خدماتنا الرئيسية',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: AppColors.primaryGolden,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                ),
 
-        // ✅ Scrollable Animated Cards with indicators
-        SizedBox(
-          height: 240,
-          child: _MainFeatureCarousel(
-            onSelect: (title, subtitle) =>
-                _showServiceDialog(context, title, subtitle),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppConstants.spacingMD),
+                ),
+
+                // --- Main Feature Cards ---
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 200,
+                    child: _MainFeatureCarousel(
+                      onSelect: (title, subtitle) =>
+                          _showServiceDialog(context, title, subtitle),
+                    ),
+                  ),
+                ),
 
 
                 const SliverToBoxAdapter(

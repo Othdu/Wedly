@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/minimal_headline.dart';
+import '../../../../shared/widgets/app_header.dart';
 import '../../../favorites/presentation/pages/favorites_list_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -13,18 +13,29 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: AppColors.backgroundPrimary,
       body: CustomScrollView(
         slivers: [
-          // App Bar
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.white,
-            elevation: 0,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: MinimalHeadline(title: 'الملف الشخصي'),
-              titlePadding: const EdgeInsets.only(
-                left: AppConstants.spacingLG,
-                bottom: AppConstants.spacingMD,
+          // Header Section
+          SliverToBoxAdapter(
+            child: AppHeader(
+              welcomeText: '',
+              subtitleText: '',
+              featureTitle: 'الملف الشخصي ',
+              logo: Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Center(
+                  child: Text(
+                    'W',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
