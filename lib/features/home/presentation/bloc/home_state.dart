@@ -18,14 +18,40 @@ class HomeLoading extends HomeState {
 class HomeLoaded extends HomeState {
   final List<FeaturedService> featuredServices;
   final List<ServiceCategory> serviceCategories;
+  final List<FeaturedService> allServices;
+  final List<FeaturedService> searchResults;
+  final String? searchQuery;
+  final bool isSearching;
 
   const HomeLoaded({
     required this.featuredServices,
     required this.serviceCategories,
+    required this.allServices,
+    this.searchResults = const [],
+    this.searchQuery,
+    this.isSearching = false,
   });
 
+  HomeLoaded copyWith({
+    List<FeaturedService>? featuredServices,
+    List<ServiceCategory>? serviceCategories,
+    List<FeaturedService>? allServices,
+    List<FeaturedService>? searchResults,
+    String? searchQuery,
+    bool? isSearching,
+  }) {
+    return HomeLoaded(
+      featuredServices: featuredServices ?? this.featuredServices,
+      serviceCategories: serviceCategories ?? this.serviceCategories,
+      allServices: allServices ?? this.allServices,
+      searchResults: searchResults ?? this.searchResults,
+      searchQuery: searchQuery ?? this.searchQuery,
+      isSearching: isSearching ?? this.isSearching,
+    );
+  }
+
   @override
-  List<Object> get props => [featuredServices, serviceCategories];
+  List<Object?> get props => [featuredServices, serviceCategories, allServices, searchResults, searchQuery, isSearching];
 }
 
 class HomeError extends HomeState {

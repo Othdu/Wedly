@@ -9,8 +9,8 @@ import '../bloc/home_state.dart';
 import '../bloc/home_event.dart';
 import '../widgets/featured_service_card.dart';
 import '../widgets/service_category_card.dart';
+import '../widgets/search_bar_widget.dart';
 import '../../../../shared/widgets/app_header.dart';
-import '../../../../shared/widgets/quick_actions.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
 import '../../../vendors/presentation/pages/vendors_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
@@ -44,6 +44,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _pages[_currentIndex],
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentIndex,
@@ -59,7 +60,7 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state is HomeLoading) {
@@ -138,18 +139,19 @@ class HomeContent extends StatelessWidget {
                   child: SizedBox(height: AppConstants.spacingLG),
                 ),
 
-                // --- Main Services Section ---
+                // --- Search Bar ---
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppConstants.spacingLG,
                     ),
-                    child: Text(
-                      'خدماتنا الرئيسية',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.primaryGolden,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    child: SearchBarWidget(
+                      onSearch: (query) {
+                        context.read<HomeBloc>().add(
+                          HomeSearchRequested(query: query),
+                        );
+                      },
+                      hintText: 'ابحث عن خدمات الزفاف...',
                     ),
                   ),
                 ),
@@ -158,145 +160,258 @@ class HomeContent extends StatelessWidget {
                   child: SizedBox(height: AppConstants.spacingMD),
                 ),
 
-                // --- Main Feature Cards ---
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 200,
-                    child: _MainFeatureCarousel(
-                      onSelect: (title, subtitle) =>
-                          _showServiceDialog(context, title, subtitle),
-                    ),
-                  ),
-                ),
-
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppConstants.spacingLG),
-                ),
-
-                // --- Featured Services ---
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppConstants.spacingLG,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'الخدمات المميزة',
-                          style:
-                              Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'عرض الكل',
-                            style: TextStyle(
-                              color: AppColors.primaryGolden,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                SliverToBoxAdapter(
-                  child: Container(
-                    height: 240,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                // --- Search Results ---
+                if (state.isSearching) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                      ),
                       child: Row(
-                        children: state.featuredServices.isNotEmpty
-                            ? state.featuredServices.map((service) {
-                                return Container(
-                                  width: 250,
-                                  margin: const EdgeInsets.only(right: 8),
-                                  child: FeaturedServiceCard(
-                                    service: service,
-                                    onTap: () {
-                                      context.read<HomeBloc>().add(
-                                            HomeFeaturedServiceSelected(
-                                              serviceId: service.id,
-                                            ),
-                                          );
-                                    },
-                                  ),
-                                );
-                              }).toList()
-                            : [const SizedBox.shrink()],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'نتائج البحث عن "${state.searchQuery}"',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppColors.primaryGolden,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              context.read<HomeBloc>().add(const HomeSearchCleared());
+                            },
+                            child: const Text('مسح البحث'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingMD),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: 240,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: state.searchResults.isNotEmpty
+                          ? SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: state.searchResults.map((service) {
+                                  return Container(
+                                    width: 250,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    child: FeaturedServiceCard(
+                                      service: service,
+                                      onTap: () {
+                                        context.read<HomeBloc>().add(
+                                              HomeFeaturedServiceSelected(
+                                                serviceId: service.id,
+                                              ),
+                                            );
+                                      },
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 64,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(height: AppConstants.spacingMD),
+                                  Text(
+                                    'لم يتم العثور على نتائج',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                  ),
+                                  const SizedBox(height: AppConstants.spacingSM),
+                                  Text(
+                                    'جرب البحث بكلمات مختلفة',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: AppColors.textLight,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingLG),
+                  ),
+                ],
 
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppConstants.spacingLG),
-                ),
+                // --- Main Services Section ---
+                if (!state.isSearching) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                      ),
+                      child: Text(
+                        'خدماتنا الرئيسية',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppColors.primaryGolden,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
 
-                // --- Service Categories ---
-                SliverToBoxAdapter(
-                  child: Padding(
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingMD),
+                  ),
+
+                  // --- Main Feature Cards ---
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 200,
+                      child: _MainFeatureCarousel(
+                        onSelect: (title, subtitle) =>
+                            _showServiceDialog(context, title, subtitle),
+                      ),
+                    ),
+                  ),
+                ],
+
+
+                if (!state.isSearching) ...[
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingLG),
+                  ),
+
+                  // --- Featured Services ---
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'الخدمات المميزة',
+                            style:
+                                Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      color: Theme.of(context).textTheme.titleMedium?.color,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            child: Text(
+                              'عرض الكل',
+                              style: TextStyle(
+                                color: AppColors.primaryGolden,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: 240,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: state.featuredServices.isNotEmpty
+                              ? state.featuredServices.map((service) {
+                                  return Container(
+                                    width: 250,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    child: FeaturedServiceCard(
+                                      service: service,
+                                      onTap: () {
+                                        context.read<HomeBloc>().add(
+                                              HomeFeaturedServiceSelected(
+                                                serviceId: service.id,
+                                              ),
+                                            );
+                                      },
+                                    ),
+                                  );
+                                }).toList()
+                              : [const SizedBox.shrink()],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingLG),
+                  ),
+
+                  // --- Service Categories ---
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                      ),
+                      child: Text(
+                        'فئات الخدمات',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: Theme.of(context).textTheme.titleMedium?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingMD),
+                  ),
+
+                  SliverPadding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppConstants.spacingLG,
                     ),
-                    child: Text(
-                      'فئات الخدمات',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 1.2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index >= state.serviceCategories.length ||
+                              state.serviceCategories.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          final category = state.serviceCategories[index];
+                          return ServiceCategoryCard(
+                            category: category,
+                            onTap: () {
+                              context.read<HomeBloc>().add(
+                                    HomeServiceCategorySelected(
+                                      categoryId: category.id,
+                                    ),
+                                  );
+                            },
+                          );
+                        },
+                        childCount: state.serviceCategories.isNotEmpty
+                            ? state.serviceCategories.length
+                            : 0,
+                      ),
                     ),
                   ),
-                ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppConstants.spacingMD),
-                ),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spacingLG,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 1.2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index >= state.serviceCategories.length ||
-                            state.serviceCategories.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        final category = state.serviceCategories[index];
-                        return ServiceCategoryCard(
-                          category: category,
-                          onTap: () {
-                            context.read<HomeBloc>().add(
-                                  HomeServiceCategorySelected(
-                                    categoryId: category.id,
-                                  ),
-                                );
-                          },
-                        );
-                      },
-                      childCount: state.serviceCategories.isNotEmpty
-                          ? state.serviceCategories.length
-                          : 0,
-                    ),
-                  ),
-                ),
+                ],
 
                 const SliverToBoxAdapter(
                   child: SizedBox(height: AppConstants.spacingXXL + 20),
@@ -325,7 +440,7 @@ class HomeContent extends StatelessWidget {
         duration: AppConstants.mediumAnimationDuration,
         padding: const EdgeInsets.all(AppConstants.spacingMD),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius:
               BorderRadius.circular(AppConstants.borderRadiusLarge),
           border: Border.all(
@@ -353,7 +468,7 @@ class HomeContent extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                color: AppColors.white,
+                color: Theme.of(context).cardColor,
                 size: AppConstants.iconSizeXL,
               ),
             ),
@@ -361,7 +476,7 @@ class HomeContent extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
                     fontWeight: FontWeight.bold,
                   ),
               textAlign: TextAlign.center,
@@ -421,9 +536,9 @@ class HomeContent extends StatelessWidget {
                 borderRadius:
                     BorderRadius.circular(AppConstants.borderRadius),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.info,
-                color: AppColors.white,
+                color: Theme.of(context).cardColor,
                 size: AppConstants.iconSizeMD,
               ),
             ),
@@ -591,7 +706,7 @@ class _MainFeatureCarouselState extends State<_MainFeatureCarousel> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius:
               BorderRadius.circular(AppConstants.borderRadiusLarge),
           boxShadow: [
@@ -613,7 +728,7 @@ class _MainFeatureCarouselState extends State<_MainFeatureCarousel> {
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.titleMedium?.color,
                     ),
               ),
               const SizedBox(height: 4),

@@ -44,17 +44,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.darkGray,
-            AppColors.black,
-          ],
-        ),
+        color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         boxShadow: [
           BoxShadow(
-            color: AppColors.goldenShadow.withOpacity(0.4),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkShadow
+                : AppColors.goldenShadow.withOpacity(0.4),
             blurRadius: 10,
             offset: const Offset(0, -3),
           ),

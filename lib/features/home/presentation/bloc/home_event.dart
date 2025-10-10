@@ -37,3 +37,7 @@ class HomeSearchRequested extends HomeEvent {
   @override
   List<Object> get props => [query];
 }
+
+class HomeSearchCleared extends HomeEvent {
+  const HomeSearchCleared();
+}

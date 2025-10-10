@@ -39,6 +39,22 @@ class AppColors {
   static const Color backgroundSecondary = Color(0xFFF7F7F7);
   static const Color backgroundDark = Color(0xFF1D1D1D);
   
+  // Dark Theme Colors
+  static const Color darkBackground = Color(0xFF000000);
+  static const Color darkSurface = Color(0xFF1D1D1D);
+  static const Color darkSurfaceVariant = Color(0xFF2E2E2E);
+  static const Color darkCard = Color(0xFF1A1A1A);
+  static const Color darkBorder = Color(0xFF404040);
+  
+  // Dark Theme Text Colors
+  static const Color darkTextPrimary = Color(0xFFFFFFFF);
+  static const Color darkTextSecondary = Color(0xFFE0E0E0);
+  static const Color darkTextTertiary = Color(0xFFB0B0B0);
+  
+  // Dark Theme Shadow Colors
+  static const Color darkShadow = Color(0x40000000);
+  static const Color darkGoldenShadow = Color(0x30D6B45A);
+  
   // Border Colors
   static const Color borderLight = Color(0xFFE0E0E0);
   static const Color borderGolden = Color(0xFFD6B45A);
@@ -104,5 +120,36 @@ class AppColors {
     ),
   ];
 
-  static var golden;
+  // Dark Theme Box Shadows
+  static const List<BoxShadow> darkCardShadowSmall = [
+    BoxShadow(
+      color: darkShadow,
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
+  
+  static const List<BoxShadow> darkCardShadowMedium = [
+    BoxShadow(
+      color: darkShadow,
+      blurRadius: 8,
+      offset: Offset(0, 4),
+    ),
+  ];
+  
+  static const List<BoxShadow> darkGoldenShadowSmall = [
+    BoxShadow(
+      color: darkGoldenShadow,
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
+  
+  static const List<BoxShadow> darkGoldenShadowMedium = [
+    BoxShadow(
+      color: darkGoldenShadow,
+      blurRadius: 8,
+      offset: Offset(0, 4),
+    ),
+  ];
 }

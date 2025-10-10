@@ -9,14 +9,14 @@ class FavoritesListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
             pinned: true,
-            backgroundColor: AppColors.white,
+            backgroundColor: Theme.of(context).cardColor,
             elevation: 0,
             flexibleSpace: const FlexibleSpaceBar(
               title: MinimalHeadline(title: 'المفضلة'),
@@ -33,16 +33,20 @@ class FavoritesListPage extends StatelessWidget {
               margin: const EdgeInsets.all(AppConstants.spacingLG),
               padding: const EdgeInsets.all(AppConstants.spacingXXL),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                boxShadow: AppColors.cardShadowMedium,
+                boxShadow: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkCardShadowMedium
+                    : AppColors.cardShadowMedium,
               ),
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(AppConstants.spacingLG),
                     decoration: BoxDecoration(
-                      color: AppColors.lightGray,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkSurfaceVariant
+                          : AppColors.lightGray,
                       borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
                     ),
                     child: const Icon(

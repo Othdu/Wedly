@@ -63,7 +63,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         : _reviews.where((r) => r['rating'] == _selectedStars).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
         backgroundColor: AppColors.primaryGolden,
@@ -108,9 +108,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
               margin: const EdgeInsets.all(AppConstants.spacingLG),
               padding: const EdgeInsets.all(AppConstants.spacingLG),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                boxShadow: AppColors.cardShadowMedium,
+                boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardShadowMedium
+            : AppColors.cardShadowMedium,
               ),
               child: Row(
                 children: [
@@ -254,7 +256,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
               borderRadius: BorderRadius.circular(8),
               child: Stack(
                 children: [
-                  Container(height: 10, color: AppColors.lightGray),
+                  Container(
+                    height: 10, 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkSurfaceVariant
+                        : AppColors.lightGray,
+                  ),
                   FractionallySizedBox(
                     widthFactor: ratio.clamp(0.0, 1.0),
                     child: Container(height: 10, color: AppColors.primaryGolden.withOpacity(0.8)),
@@ -275,7 +282,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primaryGolden.withOpacity(0.14) : AppColors.white,
+          color: selected 
+              ? AppColors.primaryGolden.withOpacity(0.14) 
+              : Theme.of(context).cardColor,
           border: Border.all(
             color: selected ? AppColors.primaryGolden : Colors.grey.shade300,
           ),
@@ -290,7 +299,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
             Text(
               label,
               style: TextStyle(
-                color: selected ? AppColors.primaryGolden : AppColors.textPrimary,
+                color: selected 
+                ? AppColors.primaryGolden 
+                : Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -315,9 +326,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
         vertical: AppConstants.spacingSM,
       ),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        boxShadow: AppColors.cardShadowMedium,
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardShadowMedium
+            : AppColors.cardShadowMedium,
         border: Border.all(color: AppColors.primaryGolden.withOpacity(0.08)),
       ),
       child: Padding(
@@ -347,7 +360,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         name,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
                             ),
                       ),
                       Row(
@@ -362,9 +374,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           const SizedBox(width: 8),
                           Text(
                             date,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -373,7 +383,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.more_horiz, color: AppColors.textSecondary),
+                  icon: Icon(
+                    Icons.more_horiz, 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -381,7 +396,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
             Text(
               comment,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
                     height: 1.5,
                   ),
             ),
@@ -393,8 +407,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   icon: const Icon(Icons.thumb_up_alt_outlined, size: 18),
                   label: const Text('مفيد'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    side: BorderSide(color: Colors.grey.shade300),
+                    foregroundColor: Theme.of(context).textTheme.bodyMedium?.color,
+                    side: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkBorder
+                          : Colors.grey.shade300,
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
@@ -416,16 +434,20 @@ class _FeedbackPageState extends State<FeedbackPage> {
       margin: const EdgeInsets.all(AppConstants.spacingLG),
       padding: const EdgeInsets.all(AppConstants.spacingXXL),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        boxShadow: AppColors.cardShadowMedium,
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardShadowMedium
+            : AppColors.cardShadowMedium,
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(AppConstants.spacingLG),
             decoration: BoxDecoration(
-              color: AppColors.lightGray,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkSurfaceVariant
+                  : AppColors.lightGray,
               borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
             ),
             child: const Icon(
@@ -438,16 +460,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
           Text(
             'لا توجد آراء بعد',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppConstants.spacingMD),
           Text(
             'كن أول من يشارك رأيه حول خدماتنا وتجربته معنا',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(context).textTheme.bodyLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppConstants.spacingLG),

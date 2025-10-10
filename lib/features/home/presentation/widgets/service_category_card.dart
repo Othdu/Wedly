@@ -42,13 +42,15 @@ class ServiceCategoryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           border: Border.all(
             color: AppColors.primaryGolden.withOpacity(0.3),
             width: 1,
           ),
-          boxShadow: AppColors.cardShadowSmall,
+          boxShadow: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkCardShadowSmall
+              : AppColors.cardShadowSmall,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +76,6 @@ class ServiceCategoryCard extends StatelessWidget {
             Text(
               category.name,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,

@@ -18,7 +18,7 @@ class QuickServiceCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
           boxShadow: [
             BoxShadow(
@@ -93,7 +93,6 @@ class QuickServiceCard extends StatelessWidget {
                     Text(
                       service['title'] as String,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 2,
@@ -105,9 +104,7 @@ class QuickServiceCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         service['subtitle'] as String,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

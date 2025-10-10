@@ -77,7 +77,7 @@ class QuickAccessPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // Header Section

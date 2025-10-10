@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
+import 'core/utils/storage_service.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/home/presentation/bloc/home_event.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'features/onboarding/presentation/pages/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,62 +19,65 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-    ),
-  );
+  // Initialize storage service
+  final storageService = await StorageService.getInstance();
   
-  runApp(const WEDLYApp());
+  runApp(WEDLYApp(storageService: storageService));
 }
 
 class WEDLYApp extends StatelessWidget {
-  const WEDLYApp({super.key});
+  final StorageService storageService;
+  
+  const WEDLYApp({super.key, required this.storageService});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<HomeBloc>(
-      create: (context) => HomeBloc()..add(const HomeInitialized()),
-      child: MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        
-        // Theme Configuration
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primaryGolden,
-            brightness: Brightness.light,
-            primary: AppColors.primaryGolden,
-            secondary: AppColors.goldenLight,
-            surface: AppColors.white,
-            error: AppColors.error,
-          ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<HomeBloc>(
+          create: (context) => HomeBloc()..add(const HomeInitialized()),
         ),
-        
-        // Localization Configuration
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('ar', 'SA'), // Arabic (Saudi Arabia)
-          Locale('en', 'US'), // English (United States)
-        ],
-        locale: const Locale('ar', 'SA'), // Default to Arabic
-        
-        // Home Page
-        home: const HomePage(),
-        
-        // Builder for additional configurations
-        builder: (context, child) {
-          return Directionality(
-            textDirection: TextDirection.rtl, // RTL for Arabic
-            child: child!,
+        BlocProvider<ThemeCubit>(
+          create: (context) => ThemeCubit(storageService)..initialize(),
+        ),
+      ],
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            
+            // Theme Configuration
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeState.themeMode == AppThemeMode.system
+                ? ThemeMode.system
+                : themeState.themeMode == AppThemeMode.dark
+                    ? ThemeMode.dark
+                    : ThemeMode.light,
+            
+            // Localization Configuration
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('ar', 'SA'), // Arabic (Saudi Arabia)
+              Locale('en', 'US'), // English (United States)
+            ],
+            locale: const Locale('ar', 'SA'), // Default to Arabic
+            
+            // Splash Screen
+            home: const SplashScreen(),
+            
+            // Builder for additional configurations
+            builder: (context, child) {
+              return Directionality(
+                textDirection: TextDirection.rtl, // RTL for Arabic
+                child: child!,
+              );
+            },
           );
         },
       ),

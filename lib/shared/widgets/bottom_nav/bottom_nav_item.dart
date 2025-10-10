@@ -45,7 +45,7 @@ class BottomNavItem extends StatelessWidget {
               size: iconSize,
               color: isSelected
                   ? AppColors.primaryGolden
-                  : AppColors.white.withOpacity(0.9),
+                  : Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
             ),
             SizedBox(height: spacing),
             Text(
@@ -53,8 +53,9 @@ class BottomNavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color:
-                    isSelected ? AppColors.primaryGolden : AppColors.white,
+                color: isSelected 
+                    ? AppColors.primaryGolden 
+                    : Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
               ),
             ),
           ],

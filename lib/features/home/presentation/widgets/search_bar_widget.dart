@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 
@@ -19,11 +20,13 @@ class SearchBarWidget extends StatefulWidget {
 class _SearchBarWidgetState extends State<SearchBarWidget> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -39,9 +42,11 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppConstants.spacingMD),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        boxShadow: AppColors.cardShadowSmall,
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardShadowSmall
+            : AppColors.cardShadowSmall,
         border: Border.all(
           color: AppColors.primaryGolden.withOpacity(0.3),
           width: 1,
@@ -52,13 +57,16 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         focusNode: _focusNode,
         textInputAction: TextInputAction.search,
         onSubmitted: (_) => _handleSearch(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: AppConstants.fontSizeMD,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
         decoration: InputDecoration(
           hintText: widget.hintText ?? 'ابحث عن خدمات الزفاف...',
-          hintStyle: const TextStyle(
-            color: AppColors.textLight,
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkTextTertiary
+                : AppColors.textLight,
           ),
           prefixIcon: const Icon(
             Icons.search,
@@ -71,9 +79,11 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                     _searchController.clear();
                     setState(() {});
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.clear,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
                     size: AppConstants.iconSizeSM,
                   ),
                 )
@@ -86,6 +96,19 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         ),
         onChanged: (value) {
           setState(() {});
+          
+          // إلغاء البحث السابق
+          _debounceTimer?.cancel();
+          
+          // البحث الفوري أثناء الكتابة مع debounce
+          _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+            if (value.trim().isNotEmpty) {
+              widget.onSearch(value.trim());
+            } else {
+              // إذا كان النص فارغ، مسح البحث
+              widget.onSearch('');
+            }
+          });
         },
       ),
     );

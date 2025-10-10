@@ -20,9 +20,11 @@ class FeaturedServiceCard extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          boxShadow: AppColors.cardShadowMedium,
+          boxShadow: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkCardShadowMedium
+              : AppColors.cardShadowMedium,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,24 +40,53 @@ class FeaturedServiceCard extends StatelessWidget {
                 aspectRatio: 2.0,
                 child: Container(
                   width: double.infinity,
-                  color: AppColors.lightGray,
-                  child: Image.network(
-                    service.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(
-                        Icons.broken_image_outlined,
-                        size: 40,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      );
-                    },
-                  ),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.lightGray,
+                  child: service.imageUrl.startsWith('http')
+                      ? Image.network(
+                          service.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkSurfaceVariant
+                                : AppColors.lightGray,
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 40,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkSurfaceVariant
+                                  : AppColors.lightGray,
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          service.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkSurfaceVariant
+                                : AppColors.lightGray,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                size: 40,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -71,7 +102,6 @@ class FeaturedServiceCard extends StatelessWidget {
                   Text(
                     service.title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                     maxLines: 1,
@@ -83,9 +113,7 @@ class FeaturedServiceCard extends StatelessWidget {
                   // Service Subtitle (no Expanded to prevent overflow)
                   Text(
                     service.subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                    style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
