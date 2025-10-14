@@ -13,6 +13,7 @@ import '../widgets/search_bar_widget.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
 import '../../../vendors/presentation/pages/vendors_page.dart';
+import 'featured_services_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../shared/widgets/bottom_nav/bottom_navigation_bar.dart';
 
@@ -126,6 +127,8 @@ class HomeContent extends StatelessWidget {
                           image: AssetImage('assets/images/logo.png'),
                           width: 50,
                           height: 50,
+                          
+                          
                         ),
                       ),
                     ),
@@ -306,7 +309,13 @@ class HomeContent extends StatelessWidget {
                                     ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const FeaturedServicesPage(),
+                                ),
+                              );
+                            },
                             child: Text(
                               'عرض الكل',
                               style: TextStyle(

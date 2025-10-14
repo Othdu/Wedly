@@ -46,6 +46,13 @@ class AppColors {
   static const Color darkCard = Color(0xFF1A1A1A);
   static const Color darkBorder = Color(0xFF404040);
   
+  // Lux Dark Gradient (for cinematic onboarding backgrounds)
+  static const Color darkGradientStart = Color(0xFF1C1C1C); // #1C1C1C
+  static const Color darkGradientEnd = Color(0xFF3A3A3A);   // #3A3A3A
+  
+  // Champagne gold for typography accents
+  static const Color champagneGold = Color(0xFFF5E6C8);
+  
   // Dark Theme Text Colors
   static const Color darkTextPrimary = Color(0xFFFFFFFF);
   static const Color darkTextSecondary = Color(0xFFE0E0E0);
@@ -71,6 +78,12 @@ class AppColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [goldenGradientStart, goldenGradientEnd],
+  );
+  
+  static const LinearGradient darkCinematicGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [darkGradientStart, darkGradientEnd],
   );
   
   static const LinearGradient cardGradient = LinearGradient(

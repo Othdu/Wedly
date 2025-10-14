@@ -36,6 +36,22 @@ class ServiceCategoryCard extends StatelessWidget {
     }
   }
 
+  Widget _buildCategoryImage(BuildContext context, String assetPath) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // For simple black icons on transparent background, we can colorize to white in dark mode
+    // using ColorFiltered. This works well for mono-tone glyph PNGs/SVGs.
+    final image = Image.asset(
+      assetPath,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+    );
+    if (!isDark) return image;
+    return ColorFiltered(
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      child: image,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -55,20 +71,32 @@ class ServiceCategoryCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Category Icon
-            Container(
-              padding: const EdgeInsets.all(AppConstants.spacingSM),
-              decoration: BoxDecoration(
-                gradient: AppColors.goldenGradient,
-                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                boxShadow: AppColors.goldenShadowSmall,
+            // Category Image (preferred) or Icon (fallback)
+            if (category.image != null && category.image!.isNotEmpty)
+              Container(
+                height: 48,
+                width: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                  boxShadow: AppColors.goldenShadowSmall,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _buildCategoryImage(context, category.image!),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(AppConstants.spacingSM),
+                decoration: BoxDecoration(
+                  gradient: AppColors.goldenGradient,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  boxShadow: AppColors.goldenShadowSmall,
+                ),
+                child: Icon(
+                  _getCategoryIcon(category.icon ?? ''),
+                  color: AppColors.white,
+                  size: AppConstants.iconSizeMD,
+                ),
               ),
-              child: Icon(
-                _getCategoryIcon(category.icon),
-                color: AppColors.white,
-                size: AppConstants.iconSizeMD,
-              ),
-            ),
             
             const SizedBox(height: AppConstants.spacingSM),
             

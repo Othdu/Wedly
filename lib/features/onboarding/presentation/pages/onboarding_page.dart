@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:math' as math;
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -22,18 +23,22 @@ class _OnboardingPageState extends State<OnboardingPage>
   late AnimationController _illustrationController;
   late AnimationController _textController;
   late AnimationController _particlesController;
+  Timer? _autoTimer;
+  bool _autoStarted = false;
+  int _autoDirection = 1; // 1 forward, -1 backward
+  Timer? _resumeAutoTimer;
   
   late Animation<double> _backgroundOpacityAnimation;
-  late Animation<double> _illustrationScaleAnimation;
-  late Animation<double> _illustrationRotationAnimation;
-  late Animation<double> _textSlideAnimation;
-  late Animation<double> _textOpacityAnimation;
+  // Minimal mode: no per-slide animation values
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
     _startAnimations();
+    // Start auto-play immediately
+    _autoStarted = true;
+    _startAutoAdvance();
   }
 
   void _initializeAnimations() {
@@ -65,57 +70,16 @@ class _OnboardingPageState extends State<OnboardingPage>
       curve: Curves.easeOut,
     ));
 
-    _illustrationScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _illustrationController,
-      curve: Curves.elasticOut,
-    ));
-
-    _illustrationRotationAnimation = Tween<double>(
-      begin: -0.3,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _illustrationController,
-      curve: Curves.elasticOut,
-    ));
-
-    _textSlideAnimation = Tween<double>(
-      begin: 50.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeOut,
-    ));
-
-    _textOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-    ));
+    // No-op: animations removed for minimalist experience
   }
 
   void _startAnimations() {
     _backgroundController.forward();
+    // Minimalist: only a very subtle background stars movement
     _particlesController.repeat();
-    
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _illustrationController.forward();
-    });
-    
-    Future.delayed(const Duration(milliseconds: 600), () {
-      _textController.forward();
-    });
   }
 
-  void _resetAnimations() {
-    _illustrationController.reset();
-    _textController.reset();
-    _startAnimations();
-  }
+  void _resetAnimations() {}
 
   @override
   void dispose() {
@@ -124,23 +88,65 @@ class _OnboardingPageState extends State<OnboardingPage>
     _illustrationController.dispose();
     _textController.dispose();
     _particlesController.dispose();
+    _autoTimer?.cancel();
+    _resumeAutoTimer?.cancel();
     super.dispose();
   }
 
   void _nextPage() {
-    if (_currentPage < OnboardingData.slides.length - 1) {
-      _pageController.nextPage(
-        duration: AppConstants.mediumAnimationDuration,
-        curve: Curves.easeInOut,
-      );
-      _resetAnimations();
-    } else {
-      _completeOnboarding();
+    if (!_autoStarted) {
+      _autoStarted = true;
+      _startAutoAdvance();
     }
+    if (_currentPage == OnboardingData.slides.length - 1) {
+      // Final page: finish onboarding instead of ping-pong
+      _autoTimer?.cancel();
+      _resumeAutoTimer?.cancel();
+      _completeOnboarding();
+      return;
+    }
+    _autoDirection = 1;
+    _pageController.nextPage(
+      duration: AppConstants.mediumAnimationDuration,
+      curve: Curves.easeInOut,
+    );
   }
 
   void _skipOnboarding() {
     _completeOnboarding();
+  }
+
+  void _startAutoAdvance() {
+    _autoTimer?.cancel();
+    _autoTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      final lastIndex = OnboardingData.slides.length - 1;
+      var nextIndex = _currentPage + _autoDirection;
+      if (nextIndex > lastIndex) {
+        _autoDirection = -1;
+        nextIndex = _currentPage + _autoDirection;
+      } else if (nextIndex < 0) {
+        _autoDirection = 1;
+        nextIndex = _currentPage + _autoDirection;
+      }
+      _pageController.animateToPage(
+        nextIndex,
+        duration: AppConstants.mediumAnimationDuration,
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _onUserInteraction() {
+    if (!_autoStarted) return;
+    _autoTimer?.cancel();
+    _resumeAutoTimer?.cancel();
+    _resumeAutoTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      if (_autoStarted) {
+        _startAutoAdvance();
+      }
+    });
   }
 
   Future<void> _completeOnboarding() async {
@@ -184,13 +190,15 @@ class _OnboardingPageState extends State<OnboardingPage>
         ]),
         builder: (context, child) {
           return Container(
-            decoration: BoxDecoration(
-              gradient: AppColors.goldenGradientVertical,
-            ),
+          decoration: BoxDecoration(
+            gradient: AppColors.darkCinematicGradient,
+          ),
             child: Stack(
               children: [
-                // Animated background particles
-                _buildBackgroundParticles(),
+              // Golden shimmer overlay
+              Positioned.fill(child: _buildGoldenShimmer()),
+              // Minimal background stars
+              _buildBackgroundParticles(),
                 
                 // Main content
                 SafeArea(
@@ -223,19 +231,31 @@ class _OnboardingPageState extends State<OnboardingPage>
 
                       // PageView with romantic transitions
                       Expanded(
-                        child: PageView.builder(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            // Only pause on real user drags, not programmatic animations
+                            if (notification is ScrollStartNotification && notification.dragDetails != null) {
+                              _onUserInteraction();
+                            } else if (notification is ScrollUpdateNotification && notification.dragDetails != null) {
+                              _onUserInteraction();
+                            } else if (notification is OverscrollNotification) {
+                              _onUserInteraction();
+                            }
+                            return false;
+                          },
+                          child: PageView.builder(
                           controller: _pageController,
                           onPageChanged: (index) {
                             setState(() {
                               _currentPage = index;
                             });
-                            _resetAnimations();
                           },
                           itemCount: OnboardingData.slides.length,
                           itemBuilder: (context, index) {
                             final slide = OnboardingData.slides[index];
                             return _buildAnimatedSlide(slide);
                           },
+                          ),
                         ),
                       ),
 
@@ -266,11 +286,11 @@ class _OnboardingPageState extends State<OnboardingPage>
                                   duration: const Duration(milliseconds: 300),
                                   child: OutlinedButton(
                                     onPressed: () {
+                                      _onUserInteraction();
                                       _pageController.previousPage(
                                         duration: AppConstants.mediumAnimationDuration,
                                         curve: Curves.easeInOut,
                                       );
-                                      _resetAnimations();
                                     },
                                     style: OutlinedButton.styleFrom(
                                       side: BorderSide(color: AppColors.white),
@@ -319,9 +339,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                                     shadowColor: AppColors.white.withOpacity(0.3),
                                   ),
                                   child: Text(
-                                    _currentPage == OnboardingData.slides.length - 1
-                                        ? 'ابدأ الآن'
-                                        : 'التالي',
+                                    'التالي',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: AppConstants.fontSizeMD,
@@ -345,9 +363,29 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildBackgroundParticles() {
-    return CustomPaint(
-      painter: OnboardingParticlesPainter(_particlesController.value),
-      size: Size.infinite,
+    // Minimalist: remove moving background particles
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildGoldenShimmer() {
+    return IgnorePointer(
+      child: AnimatedOpacity(
+        opacity: _backgroundOpacityAnimation.value,
+        duration: const Duration(milliseconds: 800),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0x10F3DE96), // soft golden glow
+                Colors.transparent,
+                Color(0x08D6B45A),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -364,49 +402,37 @@ class _OnboardingPageState extends State<OnboardingPage>
           
           const SizedBox(height: AppConstants.spacingXXL),
           
-          // Animated Title
-          Transform.translate(
-            offset: Offset(0, _textSlideAnimation.value),
-            child: Opacity(
-              opacity: _textOpacityAnimation.value,
-              child: Text(
-                slide.title,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppConstants.fontSizeXXL + 4,
-                  letterSpacing: 1.5,
-                  shadows: [
-                    Shadow(
-                      color: AppColors.white.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+          // Minimal Title (static)
+          Text(
+            slide.title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: AppColors.champagneGold,
+              fontWeight: FontWeight.bold,
+              fontSize: AppConstants.fontSizeXXL + 4,
+              letterSpacing: 1.2,
+              shadows: const [
+                Shadow(
+                  color: Color(0x26000000),
+                  blurRadius: 6,
+                  offset: Offset(0, 1),
                 ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ),
+            textAlign: TextAlign.center,
           ),
           
           const SizedBox(height: AppConstants.spacingLG),
           
-          // Animated Description
-          Transform.translate(
-            offset: Offset(0, _textSlideAnimation.value * 0.5),
-            child: Opacity(
-              opacity: _textOpacityAnimation.value,
-              child: Text(
-                slide.description,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.white.withOpacity(0.9),
-                  height: 1.6,
-                  fontSize: AppConstants.fontSizeMD + 2,
-                  letterSpacing: 0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
+          // Minimal Description (static)
+          Text(
+            slide.description,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.white.withOpacity(0.9),
+              height: 1.6,
+              fontSize: AppConstants.fontSizeMD + 2,
+              letterSpacing: 0.3,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -414,63 +440,64 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   Widget _buildAnimatedIllustration(OnboardingModel slide) {
-    return AnimatedBuilder(
-      animation: _illustrationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _illustrationScaleAnimation.value,
-          child: Transform.rotate(
-            angle: _illustrationRotationAnimation.value,
+    // Responsive, static hero tile optimized for raster images
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxSide = constraints.maxWidth.isFinite
+            ? constraints.maxWidth * 0.6
+            : 220;
+        final double side = maxSide.clamp(180.0, 260.0);
+
+        return Container(
+          width: side,
+          height: side,
+          decoration: BoxDecoration(
+            gradient: const RadialGradient(
+              colors: [
+                Color(0x14D6B45A), // softer outer glow
+                Colors.transparent,
+              ],
+              radius: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryGolden.withOpacity(0.12),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
             child: Container(
-              width: 220,
-              height: 220,
+              width: side - 40,
+              height: side - 40,
               decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.2),
-                    AppColors.white.withOpacity(0.1),
-                    Colors.transparent,
-                  ],
-                  radius: 1.0,
-                ),
                 borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFEDD194), // light champagne
+                    Color(0xFFD6B45A), // golden
+                  ],
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.white.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
+                    color: AppColors.primaryGolden.withOpacity(0.18),
+                    blurRadius: 14,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
-              child: Stack(
-                children: [
-                  // Background decorative elements
-                  ..._buildDecorativeElements(slide),
-                  
-                  // Main icon
-                  Center(
-                    child: Container(
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.white.withOpacity(0.4),
-                            blurRadius: 15,
-                            spreadRadius: 3,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        slide.icon,
-                        size: 70,
-                        color: AppColors.primaryGolden,
-                      ),
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.all(1.2),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.darkSurface,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge - 2),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: _buildHeroContent(slide),
               ),
             ),
           ),
@@ -479,56 +506,41 @@ class _OnboardingPageState extends State<OnboardingPage>
     );
   }
 
+  Widget _buildHeroContent(OnboardingModel slide) {
+    if (slide.imagePath != null && slide.imagePath!.isNotEmpty) {
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 280),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: AspectRatio(
+          key: ValueKey(slide.imagePath),
+          aspectRatio: 1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+            child: Image.asset(
+              slide.imagePath!,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+              isAntiAlias: true,
+              gaplessPlayback: true,
+            ),
+          ),
+        ),
+      );
+    }
+    if (slide.icon != null) {
+      return Icon(
+        slide.icon,
+        size: 64,
+        color: AppColors.goldenLight,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   List<Widget> _buildDecorativeElements(OnboardingModel slide) {
-    final elements = <Widget>[];
-    
-    // Add floating hearts
-    for (int i = 0; i < 6; i++) {
-      final angle = (i * math.pi * 2 / 6) + (_particlesController.value * math.pi * 2);
-      final radius = 90.0;
-      final x = math.cos(angle) * radius;
-      final y = math.sin(angle) * radius;
-      
-      elements.add(
-        Positioned(
-          left: 110 + x,
-          top: 110 + y,
-          child: Transform.scale(
-            scale: 0.8 + (math.sin(_particlesController.value * math.pi * 2 + i) * 0.2),
-            child: Icon(
-              Icons.favorite,
-              color: AppColors.white.withOpacity(0.6),
-              size: 12,
-            ),
-          ),
-        ),
-      );
-    }
-    
-    // Add sparkles
-    for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi * 2 / 8) + (_particlesController.value * math.pi * 4);
-      final radius = 70.0;
-      final x = math.cos(angle) * radius;
-      final y = math.sin(angle) * radius;
-      
-      elements.add(
-        Positioned(
-          left: 110 + x,
-          top: 110 + y,
-          child: Transform.scale(
-            scale: 0.5 + (math.sin(_particlesController.value * math.pi * 3 + i) * 0.3),
-            child: Icon(
-              Icons.star,
-              color: AppColors.white.withOpacity(0.7),
-              size: 8,
-            ),
-          ),
-        ),
-      );
-    }
-    
-    return elements;
+    // Minimalist: no decorative moving elements
+    return const <Widget>[];
   }
 
   Widget _buildEnhancedPageIndicator(int index) {
@@ -537,18 +549,18 @@ class _OnboardingPageState extends State<OnboardingPage>
     return AnimatedContainer(
       duration: AppConstants.shortAnimationDuration,
       margin: const EdgeInsets.symmetric(horizontal: 6),
-      height: 10,
-      width: isActive ? 32 : 10,
+      height: 8,
+      width: isActive ? 20 : 8,
       decoration: BoxDecoration(
         color: isActive 
-            ? AppColors.white 
-            : AppColors.white.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(5),
+            ? AppColors.primaryGolden 
+            : AppColors.primaryGolden.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: isActive ? [
           BoxShadow(
-            color: AppColors.white.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 2,
+            color: AppColors.primaryGolden.withOpacity(0.45),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
         ] : null,
       ),
@@ -563,95 +575,28 @@ class OnboardingParticlesPainter extends CustomPainter {
   
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.white.withOpacity(0.4)
+    final starPaint = Paint()
+      ..color = AppColors.goldenLight.withOpacity(0.35)
       ..style = PaintingStyle.fill;
-    
-    // Draw floating rose petals
-    for (int i = 0; i < 20; i++) {
-      final progress = (animationValue + i * 0.1) % 1.0;
-      final x = (size.width * 0.1) + (i * size.width * 0.04);
-      final y = size.height - (progress * size.height * 1.2);
-      
-      if (y > 0 && y < size.height) {
-        final petalSize = 4.0 + (math.sin(progress * math.pi) * 2);
-        final rotation = progress * math.pi * 2;
-        _drawRosePetal(canvas, Offset(x, y), petalSize, rotation, paint);
-      }
-    }
-    
-    // Draw romantic hearts
-    for (int i = 0; i < 15; i++) {
-      final progress = (animationValue + i * 0.08) % 1.0;
-      final x = (size.width * 0.05) + (i * size.width * 0.06);
-      final y = size.height - (progress * size.height * 1.0);
-      
-      if (y > 0 && y < size.height) {
-        final heartSize = 6.0 + (math.sin(progress * math.pi) * 3);
-        _drawHeart(canvas, Offset(x, y), heartSize, paint);
-      }
-    }
-    
-    // Draw sparkles
-    for (int i = 0; i < 25; i++) {
-      final progress = (animationValue + i * 0.04) % 1.0;
-      final x = (size.width * 0.02) + (i * size.width * 0.04);
-      final y = size.height - (progress * size.height * 0.8);
-      
-      if (y > 0 && y < size.height) {
-        final sparkleSize = 2.0 + (math.sin(progress * math.pi * 2) * 1);
-        _drawSparkle(canvas, Offset(x, y), sparkleSize, paint);
-      }
+
+    // Minimal: a few slow-drifting stars
+    const int starCount = 10; // few stars only
+    for (int i = 0; i < starCount; i++) {
+      final t = (animationValue + i * 0.07) % 1.0;
+      final dx = (size.width * ((i % 5) + 1) / 6) + math.sin(t * math.pi * 2 + i) * 8;
+      final dy = (size.height * ((i ~/ 5) + 1) / 3) + math.cos(t * math.pi * 2 + i) * 6;
+      final r = 1.2 + ((i % 3) * 0.6);
+      _drawStar(canvas, Offset(dx, dy), r, starPaint);
     }
   }
   
-  void _drawRosePetal(Canvas canvas, Offset center, double size, double rotation, Paint paint) {
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(rotation);
-    
-    final path = Path();
-    path.moveTo(0, -size);
-    path.quadraticBezierTo(size * 0.7, -size * 0.3, size * 0.5, size * 0.5);
-    path.quadraticBezierTo(0, size * 0.8, -size * 0.5, size * 0.5);
-    path.quadraticBezierTo(-size * 0.7, -size * 0.3, 0, -size);
-    
-    canvas.drawPath(path, paint);
-    canvas.restore();
-  }
-  
-  void _drawHeart(Canvas canvas, Offset center, double size, Paint paint) {
-    final path = Path();
-    final width = size;
-    final height = size * 0.9;
-    
-    path.moveTo(center.dx, center.dy + height * 0.3);
-    path.cubicTo(
-      center.dx - width * 0.5, center.dy - height * 0.2,
-      center.dx - width * 0.5, center.dy + height * 0.1,
-      center.dx, center.dy + height * 0.3,
-    );
-    path.cubicTo(
-      center.dx + width * 0.5, center.dy + height * 0.1,
-      center.dx + width * 0.5, center.dy - height * 0.2,
-      center.dx, center.dy + height * 0.3,
-    );
-    
-    canvas.drawPath(path, paint);
-  }
-  
-  void _drawSparkle(Canvas canvas, Offset center, double size, Paint paint) {
+  void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
     canvas.drawCircle(center, size, paint);
-    canvas.drawLine(
-      Offset(center.dx - size * 1.5, center.dy),
-      Offset(center.dx + size * 1.5, center.dy),
-      paint..strokeWidth = 1,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy - size * 1.5),
-      Offset(center.dx, center.dy + size * 1.5),
-      paint..strokeWidth = 1,
-    );
+    // tiny soft glow
+    final glowPaint = Paint()
+      ..color = AppColors.primaryGolden.withOpacity(0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawCircle(center, size * 2.2, glowPaint);
   }
   
   @override

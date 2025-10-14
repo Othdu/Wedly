@@ -43,7 +43,7 @@ class QuickActions extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 120,
+          height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
@@ -51,7 +51,7 @@ class QuickActions extends StatelessWidget {
             itemBuilder: (context, index) {
               final action = actions[index];
               return Container(
-                width: 100,
+                width: 80,
                 margin: const EdgeInsets.only(right: AppConstants.spacingMD),
                 child: GestureDetector(
                   onTap: action.onTap,

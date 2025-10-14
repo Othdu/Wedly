@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../widgets/quick_service_card.dart';
 
@@ -9,203 +10,264 @@ class QuickAccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quickServices = [
+    final double screenWidth = Responsive.screenWidth(context);
+    final int gridCount = Responsive.gridColumns(context, small: 2, medium: 3, large: 4, xlarge: 4);
+    final double gridAspect = Responsive.gridAspect(context, small: 0.8, medium: 0.9, large: 1.0);
+
+    final List<Map<String, dynamic>> fastServices = [
       {
         'id': '1',
         'title': 'حجز قاعة فورية',
         'subtitle': 'احجز قاعة الأفراح خلال 24 ساعة',
-        'icon': Icons.event_seat,
+        'icon': Icons.church,
         'price': 12000,
-        'color': AppColors.primaryGolden,
-        'gradient': AppColors.goldenGradient,
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       },
       {
         'id': '2',
         'title': 'تصوير سريع',
         'subtitle': 'جلسة تصوير احترافية في نفس اليوم',
-        'icon': Icons.camera_alt,
+        'icon': Icons.camera_enhance_outlined,
         'price': 5000,
-        'color': const Color(0xFF2196F3),
         'gradient': const LinearGradient(
-          colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+          colors: [Color(0xFF64B5F6), Color(0xFF1976D2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       },
       {
         'id': '3',
         'title': 'تجميل عاجل',
         'subtitle': 'خدمات التجميل والعناية السريعة',
-        'icon': Icons.face,
+        'icon': Icons.brush_outlined,
         'price': 3000,
-        'color': const Color(0xFFE91E63),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFE91E63), Color(0xFFF48FB1)],
+          colors: [Color(0xFFF48FB1), Color(0xFFD81B60)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       },
       {
         'id': '4',
         'title': 'ديكور سريع',
         'subtitle': 'تزيين القاعة في وقت قياسي',
-        'icon': Icons.local_florist,
+        'icon': Icons.auto_awesome,
         'price': 8000,
-        'color': const Color(0xFF4CAF50),
         'gradient': const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+          colors: [Color(0xFF81C784), Color(0xFF388E3C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       },
       {
         'id': '5',
         'title': 'ضيافة عاجلة',
         'subtitle': 'خدمات الطعام والشراب السريعة',
-        'icon': Icons.restaurant,
+        'icon': Icons.local_dining_outlined,
         'price': 6000,
-        'color': const Color(0xFFFF9800),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+          colors: [Color(0xFFFFE082), Color(0xFFFF9800)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       },
       {
         'id': '6',
         'title': 'موسيقى مباشرة',
         'subtitle': 'فرق موسيقية متاحة فوراً',
-        'icon': Icons.music_note,
+        'icon': Icons.mic_none_outlined,
         'price': 4000,
-        'color': const Color(0xFF9C27B0),
         'gradient': const LinearGradient(
-          colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+          colors: [Color(0xFFD1C4E9), Color(0xFF8E24AA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       },
     ];
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          // Header Section
-          SliverToBoxAdapter(
-            child: AppHeader(
-              welcomeText: '',
-              subtitleText: '',
-              featureTitle: 'حجز سريع',
-              logo: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text(
-                    'W',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Header
+            SliverToBoxAdapter(
+              child: AppHeader(
+                welcomeText: '',
+                subtitleText: '',
+                featureTitle: 'حجز سريع',
+                logo: Container(
+                  height: Responsive.hp(context, 0.05).clamp(32.0, 48.0),
+                  width: Responsive.hp(context, 0.05).clamp(32.0, 48.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'W',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Content Section
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(AppConstants.spacingLG),
-              padding: const EdgeInsets.all(AppConstants.spacingLG),
-              decoration: BoxDecoration(
-                gradient: AppColors.goldenGradient,
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                boxShadow: AppColors.goldenShadowMedium,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'خدمات سريعة',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            // Top section (search, filters)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.all(AppConstants.spacingLG),
+                padding: const EdgeInsets.all(AppConstants.spacingLG),
+                decoration: BoxDecoration(
+                  gradient: AppColors.goldenGradient,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                  boxShadow: AppColors.goldenShadowMedium,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'خدمات سريعة',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: AppColors.white,
                             fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        const SizedBox(height: AppConstants.spacingSM),
-                        Text(
-                          'احجز خدمات الزفاف في أسرع وقت ممكن',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    ),
+                    const SizedBox(height: AppConstants.spacingSM),
+                    Text(
+                      'احجز خدمات الزفاف في أسرع وقت ممكن',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: AppColors.white.withOpacity(0.9),
                           ),
+                    ),
+                    const SizedBox(height: AppConstants.spacingMD),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingMD,
+                        vertical: AppConstants.spacingSM,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                      ),
+                      child: const Text(
+                        'متاح خلال 24 ساعة',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: AppConstants.spacingMD),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppConstants.spacingMD,
-                            vertical: AppConstants.spacingSM,
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.spacingMD),
+                    // Search
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                      ),
+                      child: Row(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppConstants.spacingMD),
+                            child: Icon(Icons.search, color: AppColors.white),
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                          ),
-                          child: Text(
-                            'متاح خلال 24 ساعة',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: TextField(
+                              style: const TextStyle(color: AppColors.white),
+                              cursorColor: AppColors.white,
+                              decoration: InputDecoration(
+                                hintText: 'ابحث عن خدمة سريعة...',
+                                hintStyle: TextStyle(color: AppColors.white.withOpacity(0.8)),
+                                border: InputBorder.none,
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.spacingMD),
+                  ],
+                ),
+              ),
+            ),
+
+            // Grid title
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'الخدمات المتاحة',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingMD,
+                        vertical: AppConstants.spacingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: 'recommended',
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                          items: const [
+                            DropdownMenuItem(value: 'recommended', child: Text('الأفضل')),
+                            DropdownMenuItem(value: 'price_low', child: Text('السعر (من الأقل)')),
+                            DropdownMenuItem(value: 'price_high', child: Text('السعر (من الأعلى)')),
+                          ],
+                          onChanged: (_) {},
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingLG),
-                  Container(
-                    padding: const EdgeInsets.all(AppConstants.spacingMD),
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                    ),
-                    child: const Icon(
-                      Icons.flash_on,
-                      size: 48,
-                      color: AppColors.white,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Services Grid
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.85,
-                crossAxisSpacing: AppConstants.spacingMD,
-                mainAxisSpacing: AppConstants.spacingMD,
+            // Grid
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth >= 900 ? AppConstants.spacingXL : AppConstants.spacingLG,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final service = quickServices[index];
-                  return QuickServiceCard(
-                    service: service,
-                    onTap: () {
-                      // Handle service selection
-                      _showBookingDialog(context, service);
-                    },
-                  );
-                },
-                childCount: quickServices.length,
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridCount,
+                  childAspectRatio: gridAspect,
+                  crossAxisSpacing: AppConstants.spacingMD,
+                  mainAxisSpacing: AppConstants.spacingMD,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final service = fastServices[index];
+                    return QuickServiceCard(
+                      service: service,
+                      onTap: () => _showBookingDialog(context, service),
+                    );
+                  },
+                  childCount: fastServices.length,
+                ),
               ),
             ),
-          ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: AppConstants.spacingXXL),
-          ),
-        ],
+            const SliverToBoxAdapter(child: SizedBox(height: AppConstants.spacingXXL)),
+          ],
+        ),
       ),
     );
   }
@@ -254,7 +316,6 @@ class QuickAccessPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // Handle booking
             },
             child: const Text('احجز الآن'),
           ),

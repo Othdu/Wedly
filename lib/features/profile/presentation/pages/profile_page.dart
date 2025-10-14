@@ -6,6 +6,8 @@ import '../../../../core/theme/theme_cubit.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../favorites/presentation/pages/favorites_list_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -42,105 +44,11 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-
-          // Dark Mode Toggle
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
-              padding: const EdgeInsets.all(AppConstants.spacingMD),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                boxShadow: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkCardShadowSmall
-                    : AppColors.cardShadowSmall,
-              ),
-              child: BlocBuilder<ThemeCubit, ThemeState>(
-                builder: (context, state) {
-                  return Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(AppConstants.spacingMD),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.goldenGradient,
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                        ),
-                        child: Icon(
-                          state.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                          color: AppColors.white,
-                          size: AppConstants.iconSizeMD,
-                        ),
-                      ),
-                      const SizedBox(width: AppConstants.spacingMD),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'المظهر الداكن',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              state.isDarkMode ? 'مفعل' : 'معطل',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: state.isDarkMode,
-                        onChanged: (value) {
-                          context.read<ThemeCubit>().toggleDarkMode();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: AppConstants.spacingMD),
           ),
 
-          // Statistics Cards
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(AppConstants.spacingLG),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      '12',
-                      'حجوزات',
-                      Icons.event,
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingMD),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      '8',
-                      'مفضلة',
-                      Icons.favorite,
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingMD),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      '24',
-                      'مشاهدات',
-                      Icons.visibility,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Profile Header
-          SliverToBoxAdapter(
+            SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
               padding: const EdgeInsets.all(AppConstants.spacingLG),
@@ -174,30 +82,62 @@ class ProfilePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'مرحباً بك',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: AppConstants.spacingSM),
-                        Text(
-                          'سجل دخولك للوصول إلى جميع الميزات',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.white.withOpacity(0.9),
-                          ),
-                        ),
-                        const SizedBox(height: AppConstants.spacingMD),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Navigate to login
+                        Builder(
+                          builder: (context) {
+                            String greeting = 'مرحباً بك';
+                            bool isAuthed = false;
+                            try {
+                              final authState = context.read<AuthBloc>().state;
+                              if (authState is AuthAuthenticated) {
+                                final name = authState.user.fullName?.trim();
+                                greeting = name != null && name.isNotEmpty
+                                    ? 'مرحباً، $name'
+                                    : 'مرحباً، ${authState.user.email}';
+                                isAuthed = true;
+                              } else if (authState is AuthRegistered) {
+                                final name = authState.user.fullName?.trim();
+                                greeting = name != null && name.isNotEmpty
+                                    ? 'مرحباً، $name'
+                                    : 'مرحباً، ${authState.user.email}';
+                                isAuthed = true;
+                              }
+                            } catch (_) {
+                              // AuthBloc not provided; keep defaults
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  greeting,
+                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                        color: AppColors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                if (!isAuthed) ...[
+                                  const SizedBox(height: AppConstants.spacingSM),
+                                  Text(
+                                    'سجل دخولك للوصول إلى جميع الميزات',
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                          color: AppColors.white.withOpacity(0.9),
+                                        ),
+                                  ),
+                                  const SizedBox(height: AppConstants.spacingMD),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // Navigate to login
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.white,
+                                      foregroundColor: AppColors.primaryGolden,
+                                    ),
+                                    child: const Text('تسجيل الدخول'),
+                                  ),
+                                ],
+                              ],
+                            );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.white,
-                            foregroundColor: AppColors.primaryGolden,
-                          ),
-                          child: const Text('تسجيل الدخول'),
                         ),
                       ],
                     ),
@@ -206,7 +146,105 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: AppConstants.spacingMD),
+          ),
 
+          // Dark Mode Toggle
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
+              padding: const EdgeInsets.all(AppConstants.spacingMD),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                boxShadow: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkCardShadowSmall
+                    : AppColors.cardShadowSmall,
+              ),
+              child: BlocBuilder<ThemeCubit, ThemeState>(
+                builder: (context, state) {
+                  final bool effectiveDark = context.read<ThemeCubit>().shouldUseDarkMode(context);
+                  return Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppConstants.spacingMD),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.goldenGradient,
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                        ),
+                        child: Icon(
+                          effectiveDark ? Icons.dark_mode : Icons.light_mode,
+                          color: AppColors.white,
+                          size: AppConstants.iconSizeMD,
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.spacingMD),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'المظهر الداكن',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              effectiveDark ? 'مفعل' : 'معطل',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: effectiveDark,
+                        onChanged: (value) {
+                          // When toggled, set an explicit theme so the switch reflects the app appearance
+                          // even if the previous mode was following the system.
+                          context.read<ThemeCubit>().setThemeMode(
+                                value ? AppThemeMode.dark : AppThemeMode.light,
+                              );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Statistics Cards
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.all(AppConstants.spacingLG),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      '12',
+                      'حجوزات',
+                      Icons.event,
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.spacingMD),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      '8',
+                      'مفضلة',
+                      Icons.favorite,
+                    ),
+                  ),
+                  
+                ],
+              ),
+            ),
+          ),
+
+          // Profile Header
+    
           // Profile Options
           SliverToBoxAdapter(
             child: Padding(

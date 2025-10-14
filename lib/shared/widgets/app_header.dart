@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -18,19 +19,19 @@ class AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine if we have welcome content
     final hasWelcomeContent = welcomeText.isNotEmpty || subtitleText.isNotEmpty;
-    final headerHeight = hasWelcomeContent ? 200.0 : 120.0;
-    
+    final headerHeight = hasWelcomeContent ? 220.0 : 140.0;
+
     return Container(
       height: headerHeight,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryGolden,
-            AppColors.primaryGolden.withOpacity(0.8),
+            AppColors.primaryGolden.withOpacity(0.95),
+            AppColors.primaryGolden.withOpacity(0.75),
+            Colors.amberAccent.withOpacity(0.4),
           ],
         ),
       ),
@@ -40,128 +41,80 @@ class AppHeader extends StatelessWidget {
             horizontal: AppConstants.spacingLG,
             vertical: AppConstants.spacingMD,
           ),
-          child: hasWelcomeContent 
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  // Logo and App Name Row
-                  Row(
-                    children: [
-                      logo ??
-                          Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'ف',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                  Hero(
+                    tag: 'app_logo',
+                    child: logo ??
+                        Container(
+                          height: 44,
+                          width: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'W',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                      const SizedBox(width: AppConstants.spacingSM),
-                      Text(
-                        'WEDLY',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  // Welcome Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              welcomeText,
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            if (subtitleText.isNotEmpty) ...[
-                              const SizedBox(height: AppConstants.spacingXS),
-                              Text(
-                                subtitleText,
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                              ),
-                            ],
-                          ],
                         ),
-                      ),
-                      Text(
-                        featureTitle,
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
                   ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Logo and App Name Row
-                  Row(
-                    children: [
-                      logo ??
-                          Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'ف',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      const SizedBox(width: AppConstants.spacingSM),
-                      Text(
-                        'WEDLY',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
-                  ),
-                  // Feature Title
+                  const SizedBox(width: AppConstants.spacingSM),
                   Text(
+                    'WEDLY',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                  ).animate().fadeIn(duration: 500.ms).moveY(begin: 10),
+                ],
+              ),
+
+              const Spacer(),
+
+              if (hasWelcomeContent) ...[
+                Text(
+                  welcomeText,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ).animate().fadeIn(duration: 700.ms).moveY(begin: 10),
+                const SizedBox(height: AppConstants.spacingXS),
+                Text(
+                  subtitleText,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                ).animate().fadeIn(duration: 900.ms).moveY(begin: 10),
+              ],
+
+              if (featureTitle.isNotEmpty)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
                     featureTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
-                  ),
-                ],
-              ),
+                  ).animate().fadeIn(duration: 800.ms),
+                ),
+            ],
+          ),
         ),
       ),
-    );
+    ).animate().shimmer(duration: 8.seconds, color: Colors.white.withOpacity(0.1));
   }
 }
+

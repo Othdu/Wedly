@@ -261,12 +261,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // ✅ الخدمات المميزة للعرض في الصفحة الرئيسية
       final featuredServices = allServices.take(8).toList();
 
-      // ✅ Mock service categories (كليكابل)
+      // ✅ Mock service categories
       final serviceCategories = [
         const ServiceCategory(
           id: 'venues',
           name: 'قاعات الأفراح',
-          icon: 'venue',
+          image: 'assets/images/004-wedding-arch.png',
           serviceCount: 25,
         ),
         const ServiceCategory(
@@ -278,13 +278,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         const ServiceCategory(
           id: 'photography',
           name: 'التصوير والفيديو',
-          icon: 'camera',
+          image: 'assets/images/017-photography.png',
           serviceCount: 32,
         ),
         const ServiceCategory(
           id: 'catering',
           name: 'الضيافة والطعام',
-          icon: 'food',
+          image: 'assets/images/011-wedding-dinner.png',
           serviceCount: 15,
         ),
         const ServiceCategory(
@@ -302,7 +302,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         const ServiceCategory(
           id: 'transportation',
           name: 'عربيات زفاف',
-          icon: 'car',
+          image: 'assets/images/008-wedding-car.png',
           serviceCount: 12,
         ),
         const ServiceCategory(
@@ -313,7 +313,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         ),
         const ServiceCategory(
           id: 'wedding_planner',
-          name: 'ضيافه ',
+          name: 'التوزيعات ',
           icon: 'wedding_planner',
           serviceCount: 12,
         ),

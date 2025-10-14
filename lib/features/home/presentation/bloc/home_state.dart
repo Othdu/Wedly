@@ -85,13 +85,15 @@ class FeaturedService {
 class ServiceCategory {
   final String id;
   final String name;
-  final String icon;
+  final String? image; // asset image path
+  final String? icon;  // optional legacy icon name or asset path
   final int serviceCount;
 
   const ServiceCategory({
     required this.id,
     required this.name,
-    required this.icon,
     required this.serviceCount,
+    this.image,
+    this.icon,
   });
 }

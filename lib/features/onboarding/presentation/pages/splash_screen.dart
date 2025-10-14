@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/theme_cubit.dart';
 import '../../../../core/utils/storage_service.dart';
 import 'onboarding_page.dart';
@@ -112,12 +113,20 @@ class _SplashScreenState extends State<SplashScreen>
             builder: (context, _) {
               return Container(
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.black : Colors.white,
+                  gradient: isDarkMode 
+                      ? AppColors.darkCinematicGradient
+                      : const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.white, Color(0xFFF5F5F5)],
+                        ),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     _buildMovingBackground(isDarkMode),
+                    // Soft golden dust settling into name
+                    Positioned.fill(child: _GoldDustLayer(value: _bgGlowController.value)),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -161,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                 boxShadow: [
                   BoxShadow(
                     color: isDarkMode 
-                        ? Colors.amberAccent.withOpacity(0.4)
+                        ? AppColors.primaryGolden.withOpacity(0.35)
                         : Colors.amber.withOpacity(0.25),
                     blurRadius: isDarkMode ? 40 : 25,
                     spreadRadius: 5,
@@ -190,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen>
             AppConstants.appName,
             style: TextStyle(
               fontSize: 36,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: isDarkMode ? AppColors.champagneGold : Colors.black87,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
             ),
@@ -200,9 +209,9 @@ class _SplashScreenState extends State<SplashScreen>
             shaderCallback: (bounds) => LinearGradient(
               colors: isDarkMode
                   ? [
-                      Colors.amberAccent,
+                      AppColors.goldenLight,
                       Colors.white,
-                      Colors.amberAccent,
+                      AppColors.primaryGolden,
                     ]
                   : [
                       Colors.amber,
@@ -217,7 +226,7 @@ class _SplashScreenState extends State<SplashScreen>
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode 
-                    ? Colors.white.withOpacity(0.8)
+                    ? Colors.white.withOpacity(0.85)
                     : Colors.black.withOpacity(0.8),
                 letterSpacing: 1,
               ),
@@ -283,4 +292,39 @@ class _WhiteGlowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_WhiteGlowPainter oldDelegate) => true;
+}
+
+class _GoldDustLayer extends StatelessWidget {
+  final double value;
+  const _GoldDustLayer({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _GoldDustPainter(value),
+        size: Size.infinite,
+      ),
+    );
+  }
+}
+
+class _GoldDustPainter extends CustomPainter {
+  final double value;
+  _GoldDustPainter(this.value);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = AppColors.primaryGolden.withOpacity(0.18);
+    for (int i = 0; i < 60; i++) {
+      final t = (value + i * 0.013) % 1.0;
+      final dx = size.width * (0.1 + 0.8 * (i % 10) / 10) + (t * 15);
+      final dy = size.height * (0.15 + 0.7 * (i / 60));
+      final r = 0.8 + (i % 3) * 0.6;
+      canvas.drawCircle(Offset(dx, dy), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GoldDustPainter oldDelegate) => true;
 }

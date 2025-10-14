@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 class OnboardingModel {
   final String title;
   final String description;
-  final IconData icon;
+  final IconData? icon;
   final String? imagePath;
   final Color? backgroundColor;
 
   const OnboardingModel({
     required this.title,
     required this.description,
-    required this.icon,
+    this.icon,
     this.imagePath,
     this.backgroundColor,
   });
@@ -21,19 +21,20 @@ class OnboardingModel {
 class OnboardingData {
   static const List<OnboardingModel> slides = [
     OnboardingModel(
-      title: 'احجز قاعة أحلامك',
-      description: 'اكتشف أفضل قاعات الأفراح الفاخرة واحجز قاعة أحلامك بسهولة وأمان',
-      icon: Icons.event_seat,
+      icon: Icons.auto_awesome,
+      title: 'مرحباً بك في ويدلي', // Welcome to Wedly
+      description: 'حيث تبدأ حكاية حبك بلمسة من الفخامة والذهب.',
+        imagePath: 'assets/images/welcome.png', // minimalist sparkles for logo settling
     ),
     OnboardingModel(
-      title: 'خطط لزفاف مثالي',
-      description: 'احصل على خدمات التخطيط الشاملة لزفافك من أفضل الخبراء في المملكة',
-      icon: Icons.event_note,
+      title: 'خطط ليومك المميز بسهولة', // Plan your dream wedding effortlessly
+      description: 'من التفاصيل الصغيرة إلى اللحظات الكبيرة، كل شيء في مكان واحد.',
+      imagePath: 'assets/images/planing.png', // elegant icons will be composed
     ),
     OnboardingModel(
-      title: 'اكتشف أفضل المزودين',
-      description: 'تصفح سوق واسع من مزودي الخدمات الموثوقين لجميع احتياجات زفافك',
-      icon: Icons.store,
+      title: 'احتفظ بسحر كل لحظة', // Capture every magical moment
+      description: 'ذكريات يومك الجميل تبقى خالدة مع ويدلي.',
+      imagePath: 'assets/images/memories.png',
     ),
   ];
 }

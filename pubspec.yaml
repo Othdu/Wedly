@@ -26,6 +26,9 @@ dependencies:
   # Storage
   shared_preferences: ^2.2.2
 
+  # Animations
+  flutter_animate: ^3.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -38,3 +41,12 @@ flutter:
 
   assets:
     - assets/images/logo.png
+    - assets/images/planing.png
+    - assets/images/memories.png
+    - assets/images/welcome.png
+    - assets/images/
+    - assets/images/004-wedding-arch.png
+    - assets/images/008-wedding-car.png
+    - assets/images/017-photography.png
+    - assets/images/011-wedding-dinner.png    
+    

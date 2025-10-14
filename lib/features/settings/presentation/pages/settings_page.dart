@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme_cubit.dart';
-import '../../../../shared/widgets/app_header.dart';
+// import '../../../../shared/widgets/minimal_headline.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -14,29 +14,34 @@ class SettingsPage extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          // Header Section
+          // Minimal title like Featured Services
           SliverToBoxAdapter(
-            child: AppHeader(
-              welcomeText: '',
-              subtitleText: '',
-              featureTitle: 'الإعدادات',
-              logo: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.settings,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+            child: SafeArea(
+              bottom: false,
+              child: SizedBox(
+                height: 56,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Text(
+                      'الإعدادات',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    )
+                  ],
                 ),
               ),
-            ),
+            ),          
           ),
+          
 
           // Settings Options
           SliverToBoxAdapter(
@@ -48,9 +53,9 @@ class SettingsPage extends StatelessWidget {
                   _buildThemeSelector(context),
                   const SizedBox(height: AppConstants.spacingLG),
                   
-                  _buildSectionHeader(context, 'اللغة'),
-                  _buildLanguageSelector(context),
-                  const SizedBox(height: AppConstants.spacingLG),
+                  // _buildSectionHeader(context, 'اللغة'),
+                  // _buildLanguageSelector(context),
+                  // const SizedBox(height: AppConstants.spacingLG),
                   
                   _buildSectionHeader(context, 'الإشعارات'),
                   _buildNotificationSettings(context),
@@ -184,38 +189,24 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLanguageSelector(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        boxShadow: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkCardShadowSmall
-            : AppColors.cardShadowSmall,
-      ),
-      child: Column(
-        children: [
-          _buildLanguageOption(
-            context,
-            'العربية',
-            'Arabic',
-            Icons.language,
-            true,
-            () {},
-          ),
-          _buildDivider(context),
-          _buildLanguageOption(
-            context,
-            'English',
-            'الإنجليزية',
-            Icons.language,
-            false,
-            () {},
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildLanguageSelector(BuildContext context) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Theme.of(context).cardColor,
+  //       borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+  //       boxShadow: Theme.of(context).brightness == Brightness.dark
+  //           ? AppColors.darkCardShadowSmall
+  //           : AppColors.cardShadowSmall,
+  //     ),
+  //     child: Column(
+  //       children: [
+         
+        
+          
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildLanguageOption(
     BuildContext context,
@@ -474,3 +465,4 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
+  
