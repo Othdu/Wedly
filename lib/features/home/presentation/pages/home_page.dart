@@ -13,9 +13,9 @@ import '../widgets/search_bar_widget.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
 import '../../../vendors/presentation/pages/vendors_page.dart';
-import 'featured_services_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../shared/widgets/bottom_nav/bottom_navigation_bar.dart';
+import '../../../../shared/ads/native_ad_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -291,70 +291,12 @@ class HomeContent extends StatelessWidget {
                     child: SizedBox(height: AppConstants.spacingLG),
                   ),
 
-                  // --- Featured Services ---
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingLG,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'الخدمات المميزة',
-                            style:
-                                Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                      color: Theme.of(context).textTheme.titleMedium?.color,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const FeaturedServicesPage(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'عرض الكل',
-                              style: TextStyle(
-                                color: AppColors.primaryGolden,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(
-                    child: Container(
-                      height: 240,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: state.featuredServices.isNotEmpty
-                              ? state.featuredServices.map((service) {
-                                  return Container(
-                                    width: 250,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    child: FeaturedServiceCard(
-                                      service: service,
-                                      onTap: () {
-                                        context.read<HomeBloc>().add(
-                                              HomeFeaturedServiceSelected(
-                                                serviceId: service.id,
-                                              ),
-                                            );
-                                      },
-                                    ),
-                                  );
-                                }).toList()
-                              : [const SizedBox.shrink()],
-                        ),
+                  // مساحة مخصصة للإعلان (AdMob) بدلاً من "الخدمات المميزة"
+                  const SliverToBoxAdapter(
+                    child: Center(
+                      child: SizedBox(
+                        height: 250,
+                        child: NativeAdWidget(factoryId: 'listTile'),
                       ),
                     ),
                   ),

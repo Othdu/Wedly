@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- AdMob App ID -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-1978689939227033~4471694710</string>
+	<!-- Location usage descriptions for iOS permission prompt -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to improve nearby services and ads relevance.</string>
 </dict>
 </plist>

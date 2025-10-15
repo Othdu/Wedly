@@ -13,6 +13,18 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Temporary fix for AGP 8 namespace requirement in some plugins
+subprojects { proj ->
+    proj.plugins.withId("com.android.library") {
+        def androidExt = proj.extensions.findByName("android")
+        if (androidExt != null && !androidExt.hasProperty("namespace")) {
+            if (proj.name == "google_mobile_ads") {
+                androidExt.namespace = "io.flutter.plugins.googlemobileads"
+            }
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

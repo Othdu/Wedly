@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/theme_cubit.dart';
@@ -67,7 +68,16 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
     await Future.delayed(const Duration(seconds: 3));
+    await _requestPermissions();
     await _navigateNext();
+  }
+
+  Future<void> _requestPermissions() async {
+    // Request location permissions if not granted
+    final statusFine = await Permission.locationWhenInUse.status;
+    if (!statusFine.isGranted && !statusFine.isPermanentlyDenied) {
+      await Permission.locationWhenInUse.request();
+    }
   }
 
   Future<void> _navigateNext() async {
