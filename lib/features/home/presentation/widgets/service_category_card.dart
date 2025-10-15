@@ -13,28 +13,7 @@ class ServiceCategoryCard extends StatelessWidget {
     required this.onTap,
   });
 
-  IconData _getCategoryIcon(String iconName) {
-    switch (iconName) {
-      case 'venue':
-        return Icons.event_seat;
-      case 'dress':
-        return Icons.checkroom;
-      case 'camera':
-        return Icons.camera_alt;
-      case 'food':
-        return Icons.restaurant;
-      case 'flower':
-        return Icons.local_florist;
-      case 'music':
-        return Icons.music_note;
-      case 'car':
-        return Icons.directions_car;
-      case 'makeup':
-        return Icons.face;
-      default:
-        return Icons.category;
-    }
-  }
+  // Icon fallback removed: categories should provide images only
 
   Widget _buildCategoryImage(BuildContext context, String assetPath) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -71,32 +50,19 @@ class ServiceCategoryCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Category Image (preferred) or Icon (fallback)
+            // Category Image only (no icon fallback, no golden highlight)
             if (category.image != null && category.image!.isNotEmpty)
               Container(
                 height: 48,
                 width: 48,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                  boxShadow: AppColors.goldenShadowSmall,
                 ),
-                clipBehavior: Clip.antiAlias,
                 child: _buildCategoryImage(context, category.image!),
               )
             else
-              Container(
-                padding: const EdgeInsets.all(AppConstants.spacingSM),
-                decoration: BoxDecoration(
-                  gradient: AppColors.goldenGradient,
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                  boxShadow: AppColors.goldenShadowSmall,
-                ),
-                child: Icon(
-                  _getCategoryIcon(category.icon ?? ''),
-                  color: AppColors.white,
-                  size: AppConstants.iconSizeMD,
-                ),
-              ),
+              const SizedBox(height: 48, width: 48),
             
             const SizedBox(height: AppConstants.spacingSM),
             
@@ -114,23 +80,15 @@ class ServiceCategoryCard extends StatelessWidget {
             const SizedBox(height: 4),
             
             // Service Count
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spacingSM,
-                vertical: AppConstants.spacingXS,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGolden.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-              ),
-              child: Text(
-                '${category.serviceCount} خدمة',
-                style: const TextStyle(
-                  color: AppColors.primaryGolden,
-                  fontSize: AppConstants.fontSizeXS,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            Text(
+              '${category.serviceCount} خدمة',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
+                    fontSize: AppConstants.fontSizeXS,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
           ],
         ),

@@ -261,7 +261,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // ✅ الخدمات المميزة للعرض في الصفحة الرئيسية
       final featuredServices = allServices.take(8).toList();
 
-      // ✅ Mock service categories
+      // ✅ Mock service categories (images only)
       final serviceCategories = [
         const ServiceCategory(
           id: 'venues',
@@ -269,10 +269,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           image: 'assets/images/004-wedding-arch.png',
           serviceCount: 25,
         ),
+        // سيتم تزويد صورة لاحقاً
         const ServiceCategory(
           id: 'dresses',
           name: 'فساتين الزفاف',
-          icon: 'dress',
+          image: '',
           serviceCount: 18,
         ),
         const ServiceCategory(
@@ -287,16 +288,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           image: 'assets/images/011-wedding-dinner.png',
           serviceCount: 15,
         ),
+        // سيتم تزويد صورة لاحقاً
         const ServiceCategory(
           id: 'decoration',
           name: 'الديكور والزينة',
-          icon: 'flower',
+          image: '',
           serviceCount: 22,
         ),
+        // سيتم تزويد صورة لاحقاً
         const ServiceCategory(
           id: 'music',
           name: 'الموسيقى والترفيه',
-          icon: 'music',
+          image: '',
           serviceCount: 12,
         ),
         const ServiceCategory(
@@ -305,16 +308,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           image: 'assets/images/008-wedding-car.png',
           serviceCount: 12,
         ),
+        // سيتم تزويد صورة لاحقاً
         const ServiceCategory(
           id: 'makeup',
           name: 'ميكب ارتست',
-          icon: 'makeup',
+          image: '',
           serviceCount: 12,
         ),
+        // سيتم تزويد صورة لاحقاً
         const ServiceCategory(
           id: 'wedding_planner',
           name: 'التوزيعات ',
-          icon: 'wedding_planner',
+          image: '',
           serviceCount: 12,
         ),
       ];
