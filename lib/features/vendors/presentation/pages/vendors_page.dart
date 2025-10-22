@@ -185,6 +185,12 @@ class _VendorsPageState extends State<VendorsPage> {
                       child: TextField(
                         controller: _searchController,
                         textDirection: TextDirection.rtl,
+                        textCapitalization: TextCapitalization.none,
+                        textInputAction: TextInputAction.search,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        smartDashesType: SmartDashesType.disabled,
+                        smartQuotesType: SmartQuotesType.disabled,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           prefixIcon: Icon(Icons.search),

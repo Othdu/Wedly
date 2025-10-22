@@ -208,54 +208,6 @@ class SettingsPage extends StatelessWidget {
   //   );
   // }
 
-  Widget _buildLanguageOption(
-    BuildContext context,
-    String title,
-    String subtitle,
-    IconData icon,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(AppConstants.spacingMD),
-        decoration: BoxDecoration(
-          gradient: AppColors.goldenGradient,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.white,
-          size: AppConstants.iconSizeMD,
-        ),
-      ),
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      trailing: isSelected
-          ? Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGolden,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check,
-                color: AppColors.white,
-                size: 16,
-              ),
-            )
-          : null,
-      onTap: onTap,
-    );
-  }
 
   Widget _buildNotificationSettings(BuildContext context) {
     return Container(

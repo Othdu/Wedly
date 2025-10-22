@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../data/models/auth_models.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -48,52 +49,4 @@ class AuthError extends AuthState {
 
   @override
   List<Object> get props => [message];
-}
-
-// Simple User model (without Supabase dependency)
-class User {
-  final String id;
-  final String email;
-  final String? fullName;
-  final String? phone;
-  final DateTime? createdAt;
-
-  const User({
-    required this.id,
-    required this.email,
-    this.fullName,
-    this.phone,
-    this.createdAt,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      fullName: json['full_name'] as String?,
-      phone: json['phone'] as String?,
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'full_name': fullName,
-      'phone': phone,
-      'created_at': createdAt?.toIso8601String(),
-    };
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is User && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../bloc/home_state.dart';
+import '../../data/models/hall_model.dart'; // Import the models from data layer
 
 class ServiceCategoryCard extends StatelessWidget {
   final ServiceCategory category;
@@ -51,7 +51,7 @@ class ServiceCategoryCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Category Image only (no icon fallback, no golden highlight)
-            if (category.image != null && category.image!.isNotEmpty)
+            if (category.image.isNotEmpty)
               Container(
                 height: 48,
                 width: 48,
@@ -59,7 +59,7 @@ class ServiceCategoryCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
                 ),
-                child: _buildCategoryImage(context, category.image!),
+                child: _buildCategoryImage(context, category.image),
               )
             else
               const SizedBox(height: 48, width: 48),

@@ -79,7 +79,6 @@ class _OnboardingPageState extends State<OnboardingPage>
     _particlesController.repeat();
   }
 
-  void _resetAnimations() {}
 
   @override
   void dispose() {
@@ -538,10 +537,6 @@ class _OnboardingPageState extends State<OnboardingPage>
     return const SizedBox.shrink();
   }
 
-  List<Widget> _buildDecorativeElements(OnboardingModel slide) {
-    // Minimalist: no decorative moving elements
-    return const <Widget>[];
-  }
 
   Widget _buildEnhancedPageIndicator(int index) {
     final isActive = index == _currentPage;

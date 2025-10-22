@@ -14,6 +14,8 @@ class AuthTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final int maxLines;
   final bool enabled;
+  final TextCapitalization textCapitalization;
+  final TextInputAction textInputAction;
 
   const AuthTextField({
     super.key,
@@ -28,6 +30,8 @@ class AuthTextField extends StatelessWidget {
     this.onChanged,
     this.maxLines = 1,
     this.enabled = true,
+    this.textCapitalization = TextCapitalization.none,
+    this.textInputAction = TextInputAction.done,
   });
 
   @override
@@ -51,8 +55,11 @@ class AuthTextField extends StatelessWidget {
           onChanged: onChanged,
           maxLines: maxLines,
           enabled: enabled,
+          textCapitalization: textCapitalization,
+          textInputAction: textInputAction,
           style: const TextStyle(
             fontSize: AppConstants.fontSizeMD,
+            color: Colors.black,
           ),
           decoration: InputDecoration(
             hintText: hint,

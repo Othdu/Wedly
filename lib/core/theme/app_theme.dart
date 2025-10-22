@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
+import 'app_theme_constants.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -11,194 +12,98 @@ class AppTheme {
       
       // Color Scheme
       colorScheme: const ColorScheme.light(
-        primary: AppColors.primaryGolden,
-        secondary: AppColors.goldenLight,
-        surface: AppColors.white,
-        background: AppColors.backgroundPrimary,
-        error: AppColors.error,
-        onPrimary: AppColors.white,
-        onSecondary: AppColors.textPrimary,
-        onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
-        onError: AppColors.white,
+        primary: AppThemeConstants.primaryGolden,
+        secondary: AppThemeConstants.secondaryGold,
+        surface: AppThemeConstants.surface,
+        background: AppThemeConstants.backgroundPrimary,
+        error: AppThemeConstants.error,
+        onPrimary: AppThemeConstants.textOnPrimary,
+        onSecondary: AppThemeConstants.textPrimary,
+        onSurface: AppThemeConstants.textPrimary,
+        onBackground: AppThemeConstants.textPrimary,
+        onError: AppThemeConstants.textOnPrimary,
+        outline: AppThemeConstants.borderLight,
+        surfaceVariant: AppThemeConstants.surfaceVariant,
       ),
       
       // Scaffold
-      scaffoldBackgroundColor: AppColors.backgroundPrimary,
+      scaffoldBackgroundColor: AppThemeConstants.backgroundPrimary,
       
       // App Bar
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primaryGolden,
-        foregroundColor: AppColors.white,
-        elevation: 0,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: TextStyle(
-          color: AppColors.white,
-          fontSize: AppConstants.fontSizeXL,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      appBarTheme: AppThemeConstants.primaryAppBarTheme,
       
       // Card
-      cardTheme: CardTheme(
-        color: AppColors.white,
-        elevation: 2,
-        shadowColor: AppColors.cardShadow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-      ),
+      cardTheme: AppThemeConstants.primaryCardTheme,
       
       // Elevated Button
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryGolden,
-          foregroundColor: AppColors.white,
-          elevation: 2,
-          shadowColor: AppColors.goldenShadow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          ),
-          textStyle: const TextStyle(
-            fontSize: AppConstants.fontSizeMD,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        style: AppThemeConstants.primaryButtonStyle,
       ),
       
       // Text Button
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryGolden,
-          textStyle: const TextStyle(
-            fontSize: AppConstants.fontSizeMD,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        style: AppThemeConstants.textButtonStyle,
       ),
       
       // Input Decoration
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.backgroundSecondary,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: const BorderSide(color: AppColors.borderLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: const BorderSide(color: AppColors.borderLight),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: const BorderSide(color: AppColors.primaryGolden, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: const BorderSide(color: AppColors.error),
-        ),
-      ),
+      inputDecorationTheme: AppThemeConstants.primaryInputDecoration,
       
       // Text Theme
       textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeXXXL,
-          fontWeight: FontWeight.bold,
-        ),
-        displayMedium: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeXXL,
-          fontWeight: FontWeight.bold,
-        ),
-        displaySmall: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeXL,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineLarge: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeXXL,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineMedium: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeXL,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineSmall: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeLG,
-          fontWeight: FontWeight.w600,
-        ),
-        titleLarge: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeLG,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeMD,
-          fontWeight: FontWeight.w600,
-        ),
-        titleSmall: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeSM,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeMD,
-        ),
-        bodyMedium: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeSM,
-        ),
-        bodySmall: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: AppConstants.fontSizeXS,
-        ),
-        labelLarge: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: AppConstants.fontSizeMD,
-          fontWeight: FontWeight.w500,
-        ),
-        labelMedium: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: AppConstants.fontSizeSM,
-          fontWeight: FontWeight.w500,
-        ),
-        labelSmall: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: AppConstants.fontSizeXS,
-          fontWeight: FontWeight.w500,
-        ),
+        displayLarge: AppThemeConstants.displayLarge,
+        displayMedium: AppThemeConstants.displayMedium,
+        displaySmall: AppThemeConstants.displaySmall,
+        headlineLarge: AppThemeConstants.headlineLarge,
+        headlineMedium: AppThemeConstants.headlineMedium,
+        headlineSmall: AppThemeConstants.headlineSmall,
+        titleLarge: AppThemeConstants.titleLarge,
+        titleMedium: AppThemeConstants.titleMedium,
+        titleSmall: AppThemeConstants.titleSmall,
+        bodyLarge: AppThemeConstants.bodyLarge,
+        bodyMedium: AppThemeConstants.bodyMedium,
+        bodySmall: AppThemeConstants.bodySmall,
+        labelLarge: AppThemeConstants.labelLarge,
+        labelMedium: AppThemeConstants.labelMedium,
+        labelSmall: AppThemeConstants.labelSmall,
       ),
       
       // Bottom Navigation Bar
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primaryGolden,
-        unselectedItemColor: AppColors.textSecondary,
+        backgroundColor: AppThemeConstants.surface,
+        selectedItemColor: AppThemeConstants.primaryGolden,
+        unselectedItemColor: AppThemeConstants.textSecondary,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: AppThemeConstants.elevationLG,
       ),
       
       // Switch Theme
       switchTheme: SwitchThemeData(
         thumbColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.primaryGolden;
+            return AppThemeConstants.primaryGolden;
           }
-          return AppColors.textSecondary;
+          return AppThemeConstants.textSecondary;
         }),
         trackColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.primaryGolden.withOpacity(0.3);
+            return AppThemeConstants.primaryGolden.withOpacity(0.3);
           }
-          return AppColors.backgroundSecondary;
+          return AppThemeConstants.surfaceVariant;
         }),
+      ),
+      
+      // Dropdown Theme
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: MaterialStateProperty.all(AppThemeConstants.surface),
+          elevation: MaterialStateProperty.all(AppThemeConstants.elevationMD),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppThemeConstants.radiusMD),
+            ),
+          ),
+        ),
+        textStyle: AppThemeConstants.bodyMedium,
       ),
     );
   }

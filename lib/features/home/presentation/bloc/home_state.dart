@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../data/models/hall_model.dart'; // Import the models from data layer
 
 abstract class HomeState extends Equatable {
   const HomeState();
@@ -19,6 +20,7 @@ class HomeLoaded extends HomeState {
   final List<FeaturedService> featuredServices;
   final List<ServiceCategory> serviceCategories;
   final List<FeaturedService> allServices;
+  final List<HallModel> featuredHalls;
   final List<FeaturedService> searchResults;
   final String? searchQuery;
   final bool isSearching;
@@ -27,6 +29,7 @@ class HomeLoaded extends HomeState {
     required this.featuredServices,
     required this.serviceCategories,
     required this.allServices,
+    required this.featuredHalls,
     this.searchResults = const [],
     this.searchQuery,
     this.isSearching = false,
@@ -36,6 +39,7 @@ class HomeLoaded extends HomeState {
     List<FeaturedService>? featuredServices,
     List<ServiceCategory>? serviceCategories,
     List<FeaturedService>? allServices,
+    List<HallModel>? featuredHalls,
     List<FeaturedService>? searchResults,
     String? searchQuery,
     bool? isSearching,
@@ -44,6 +48,7 @@ class HomeLoaded extends HomeState {
       featuredServices: featuredServices ?? this.featuredServices,
       serviceCategories: serviceCategories ?? this.serviceCategories,
       allServices: allServices ?? this.allServices,
+      featuredHalls: featuredHalls ?? this.featuredHalls,
       searchResults: searchResults ?? this.searchResults,
       searchQuery: searchQuery ?? this.searchQuery,
       isSearching: isSearching ?? this.isSearching,
@@ -51,7 +56,7 @@ class HomeLoaded extends HomeState {
   }
 
   @override
-  List<Object?> get props => [featuredServices, serviceCategories, allServices, searchResults, searchQuery, isSearching];
+  List<Object?> get props => [featuredServices, serviceCategories, allServices, featuredHalls, searchResults, searchQuery, isSearching];
 }
 
 class HomeError extends HomeState {
@@ -61,39 +66,4 @@ class HomeError extends HomeState {
 
   @override
   List<Object> get props => [message];
-}
-
-// Models
-class FeaturedService {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String imageUrl;
-  final double price;
-  final double rating;
-
-  const FeaturedService({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.imageUrl,
-    required this.price,
-    required this.rating,
-  });
-}
-
-class ServiceCategory {
-  final String id;
-  final String name;
-  final String? image; // asset image path
-  final String? icon;  // optional legacy icon name or asset path
-  final int serviceCount;
-
-  const ServiceCategory({
-    required this.id,
-    required this.name,
-    required this.serviceCount,
-    this.image,
-    this.icon,
-  });
 }

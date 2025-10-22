@@ -1,9 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../../../core/api/api_client.dart';
+import '../../../../core/api/api_exceptions.dart';
+import '../../../../core/api/token_manager.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc() : super(const AuthInitial()) {
+  final AuthRepository _authRepository;
+
+  AuthBloc({AuthRepository? authRepository})
+      : _authRepository = authRepository ?? AuthRepositoryImpl(
+            remoteDataSource: AuthRemoteDataSourceImpl(
+              apiClient: apiClient,
+            ),
+          ),
+        super(const AuthInitial()) {
     on<AuthInitialized>(_onAuthInitialized);
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
@@ -16,10 +29,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      // Check if user is already logged in (mock implementation)
-      // In a real app, you would check SharedPreferences or secure storage
-      await Future.delayed(const Duration(milliseconds: 500));
-      emit(const AuthUnauthenticated());
+      // Check if user is already authenticated
+      final isAuthenticated = await _authRepository.isAuthenticated();
+      
+      if (isAuthenticated) {
+        // Try to get current user profile
+        try {
+          final user = await _authRepository.getCurrentUser();
+          emit(AuthAuthenticated(user: user));
+        } catch (e) {
+          // If profile fetch fails, clear tokens and show unauthenticated
+          await TokenManager.clearTokens();
+          emit(const AuthUnauthenticated());
+        }
+      } else {
+        emit(const AuthUnauthenticated());
+      }
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }
@@ -31,24 +56,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Mock authentication logic
-      if (event.email.isNotEmpty && event.password.isNotEmpty) {
-        final user = User(
-          id: '1',
-          email: event.email,
-          fullName: 'Test User',
-          phone: '+1234567890',
-          createdAt: DateTime.now(),
-        );
-        emit(AuthAuthenticated(user: user));
-      } else {
-        emit(const AuthError(message: 'Invalid email or password'));
-      }
+      final user = await _authRepository.login(event.email, event.password);
+      emit(AuthAuthenticated(user: user));
+    } on UnauthorizedException catch (e) {
+      emit(AuthError(message: e.message));
+    } on ValidationException catch (e) {
+      emit(AuthError(message: e.message));
+    } on NetworkException catch (e) {
+      emit(AuthError(message: e.message));
+    } on ServerException catch (e) {
+      emit(AuthError(message: e.message));
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      emit(AuthError(message: 'حدث خطأ غير متوقع'));
     }
   }
 
@@ -58,24 +77,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Mock registration logic
-      if (event.email.isNotEmpty && event.password.isNotEmpty) {
-        final user = User(
-          id: '1',
-          email: event.email,
-          fullName: event.fullName,
-          phone: event.phone,
-          createdAt: DateTime.now(),
-        );
-        emit(AuthRegistered(user: user));
-      } else {
-        emit(const AuthError(message: 'Registration failed'));
-      }
+      final user = await _authRepository.register(
+        email: event.email,
+        password: event.password,
+        confirmPassword: event.confirmPassword,
+        username: event.username,
+        firstName: event.firstName,
+        lastName: event.lastName,
+        phone: event.phone,
+        gender: event.gender,
+        role: event.role,
+      );
+      emit(AuthRegistered(user: user));
+    } on ValidationException catch (e) {
+      emit(AuthError(message: e.message));
+    } on NetworkException catch (e) {
+      emit(AuthError(message: e.message));
+    } on ServerException catch (e) {
+      emit(AuthError(message: e.message));
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      print('Registration error: $e');
+      emit(AuthError(message: 'حدث خطأ غير متوقع: ${e.toString()}'));
     }
   }
 
@@ -85,11 +107,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      // Simulate logout delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _authRepository.logout();
       emit(const AuthUnauthenticated());
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      // Even if logout fails, we should show unauthenticated state
+      emit(const AuthUnauthenticated());
     }
   }
 
@@ -99,11 +121,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      // Simulate password reset delay
-      await Future.delayed(const Duration(seconds: 1));
+      await _authRepository.requestPasswordReset(event.email);
       emit(const AuthPasswordResetSent());
+    } on ValidationException catch (e) {
+      emit(AuthError(message: e.message));
+    } on NetworkException catch (e) {
+      emit(AuthError(message: e.message));
+    } on ServerException catch (e) {
+      emit(AuthError(message: e.message));
     } catch (e) {
-      emit(AuthError(message: e.toString()));
+      emit(AuthError(message: 'حدث خطأ غير متوقع'));
     }
   }
 }

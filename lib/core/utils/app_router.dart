@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -6,14 +7,48 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../shared/widgets/main_navigation_wrapper.dart';
 import '../../features/feedback/feedback_page.dart';
+import '../../features/onboarding/presentation/pages/splash_screen.dart';
 import '../constants/app_constants.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_state.dart';
+import 'go_router_refresh_stream.dart';
 
 /// WEDLY App Router
 /// Handles all navigation routes with golden theme
 class AppRouter {
-  static final GoRouter _router = GoRouter(
-    initialLocation: AppConstants.routeHome,
+  static GoRouter createRouter(AuthBloc authBloc) {
+    return GoRouter(
+      initialLocation: AppConstants.routeSplash,
+      redirect: (context, state) async {
+        // Get AuthBloc from context
+        final authBloc = context.read<AuthBloc>();
+        final authState = authBloc.state;
+        
+        // Check if user is trying to access auth pages
+        final isAuthRoute = state.matchedLocation.startsWith(AppConstants.routeAuth);
+        
+        // If user is authenticated and trying to access auth pages, redirect to home
+        if (authState is AuthAuthenticated && isAuthRoute) {
+          return AppConstants.routeHome;
+        }
+        
+        // If user is not authenticated and trying to access protected pages, redirect to login
+        if (authState is! AuthAuthenticated && !isAuthRoute) {
+          return AppConstants.routeAuth;
+        }
+        
+        // Allow navigation
+        return null;
+      },
+      refreshListenable: GoRouterRefreshStream(authBloc.stream),
     routes: [
+      // Splash Screen Route
+      GoRoute(
+        path: AppConstants.routeSplash,
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      
       // Main Navigation Wrapper
       ShellRoute(
         builder: (context, state, child) {
@@ -170,7 +205,6 @@ class AppRouter {
         ),
       ),
     ),
-  );
-  
-  static GoRouter get router => _router;
+    );
+  }
 }

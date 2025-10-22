@@ -28,6 +28,11 @@ class AppColors {
   static const Color warning = Color(0xFFFF9800);
   static const Color info = Color(0xFF2196F3);
   
+  // Additional Status Colors (for booking system)
+  static const Color successGreen = Color(0xFF4CAF50);
+  static const Color errorRed = Color(0xFFE53935);
+  static const Color warningOrange = Color(0xFFFF9800);
+  
   // Text Colors
   static const Color textPrimary = Color(0xFF2E2E2E);
   static const Color textSecondary = Color(0xFF666666);
@@ -66,6 +71,7 @@ class AppColors {
   static const Color borderLight = Color(0xFFE0E0E0);
   static const Color borderGolden = Color(0xFFD6B45A);
   static const Color borderDark = Color(0xFF2E2E2E);
+  static const Color borderGray = Color(0xFFE0E0E0);
   
   // Gradient Definitions
   static const LinearGradient goldenGradient = LinearGradient(

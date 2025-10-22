@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../bloc/home_state.dart';
+import '../../data/models/hall_model.dart'; // Import the models from data layer
 
 class FeaturedServiceCard extends StatelessWidget {
   final FeaturedService service;
   final VoidCallback onTap;
+  final VoidCallback? onBookNow;
 
   const FeaturedServiceCard({
     super.key,
     required this.service,
     required this.onTap,
+    this.onBookNow,
   });
 
   @override
@@ -165,6 +167,34 @@ class FeaturedServiceCard extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: AppConstants.spacingSM),
+
+                  // Book Now Button
+                  if (onBookNow != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: onBookNow,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryGolden,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppConstants.spacingSM,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+                          ),
+                        ),
+                        child: const Text(
+                          'احجز الآن',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontSizeSM,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

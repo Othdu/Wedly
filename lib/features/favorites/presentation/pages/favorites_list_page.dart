@@ -20,7 +20,7 @@ class FavoritesListPage extends StatelessWidget {
             elevation: 0,
             flexibleSpace: const FlexibleSpaceBar(
               title: MinimalHeadline(title: 'المفضلة'),
-              titlePadding: const EdgeInsets.only(
+              titlePadding: EdgeInsets.only(
                 left: AppConstants.spacingLG,
                 bottom: AppConstants.spacingMD,
               ),
@@ -84,5 +84,3 @@ class FavoritesListPage extends StatelessWidget {
     );
   }
 }
-
-

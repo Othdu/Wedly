@@ -120,6 +120,7 @@ class AppConstants {
   ];
   
   // Navigation Routes
+  static const String routeSplash = '/splash';
   static const String routeHome = '/';
   static const String routeAuth = '/auth';
   static const String routeLogin = '/auth/login';

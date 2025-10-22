@@ -8,9 +8,23 @@ import '../../../favorites/presentation/pages/favorites_list_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../booking/presentation/pages/booking_list_page.dart';
+import '../bloc/profile_bloc.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load profile data when page initializes
+    context.read<ProfileBloc>().add(const ProfileLoadRequested());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,14 +103,14 @@ class ProfilePage extends StatelessWidget {
                             try {
                               final authState = context.read<AuthBloc>().state;
                               if (authState is AuthAuthenticated) {
-                                final name = authState.user.fullName?.trim();
-                                greeting = name != null && name.isNotEmpty
+                                final name = authState.user.fullName.trim();
+                                greeting = name.isNotEmpty
                                     ? 'مرحباً، $name'
                                     : 'مرحباً، ${authState.user.email}';
                                 isAuthed = true;
                               } else if (authState is AuthRegistered) {
-                                final name = authState.user.fullName?.trim();
-                                greeting = name != null && name.isNotEmpty
+                                final name = authState.user.fullName.trim();
+                                greeting = name.isNotEmpty
                                     ? 'مرحباً، $name'
                                     : 'مرحباً، ${authState.user.email}';
                                 isAuthed = true;
@@ -215,32 +229,32 @@ class ProfilePage extends StatelessWidget {
           ),
 
           // Statistics Cards
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(AppConstants.spacingLG),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      '12',
-                      'حجوزات',
-                      Icons.event,
-                    ),
+          BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, state) {
+                  int bookingsCount = 0;
+
+                  if (state is ProfileLoaded) {
+                    bookingsCount = state.bookingsCount;
+                  }
+
+              return SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.all(AppConstants.spacingLG),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          context,
+                          bookingsCount.toString(),
+                          'حجوزات',
+                          Icons.event,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppConstants.spacingMD),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      '8',
-                      'مفضلة',
-                      Icons.favorite,
-                    ),
-                  ),
-                  
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
 
           // Profile Header
@@ -257,7 +271,11 @@ class ProfilePage extends StatelessWidget {
                     'عرض جميع طلباتك وحجوزاتك',
                     Icons.shopping_bag,
                     () {
-                      // Navigate to orders
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const BookingListPage(),
+                        ),
+                      );
                     },
                   ),
                   // Favorites under orders

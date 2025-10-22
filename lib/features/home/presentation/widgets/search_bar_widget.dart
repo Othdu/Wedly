@@ -56,6 +56,11 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         controller: _searchController,
         focusNode: _focusNode,
         textInputAction: TextInputAction.search,
+        textCapitalization: TextCapitalization.none,
+        autocorrect: false,
+        enableSuggestions: false,
+        smartDashesType: SmartDashesType.disabled,
+        smartQuotesType: SmartQuotesType.disabled,
         onSubmitted: (_) => _handleSearch(),
         style: TextStyle(
           fontSize: AppConstants.fontSizeMD,

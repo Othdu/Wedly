@@ -183,6 +183,12 @@ class QuickAccessPage extends StatelessWidget {
                             child: TextField(
                               style: const TextStyle(color: AppColors.white),
                               cursorColor: AppColors.white,
+                              textCapitalization: TextCapitalization.none,
+                              textInputAction: TextInputAction.search,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              smartDashesType: SmartDashesType.disabled,
+                              smartQuotesType: SmartQuotesType.disabled,
                               decoration: InputDecoration(
                                 hintText: 'ابحث عن خدمة سريعة...',
                                 hintStyle: TextStyle(color: AppColors.white.withOpacity(0.8)),

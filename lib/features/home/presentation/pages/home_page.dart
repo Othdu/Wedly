@@ -9,11 +9,15 @@ import '../bloc/home_state.dart';
 import '../bloc/home_event.dart';
 import '../widgets/featured_service_card.dart';
 import '../widgets/service_category_card.dart';
+import '../widgets/halls_widget.dart';
+import '../widgets/quick_booking_widget.dart';
 import '../widgets/search_bar_widget.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
 import '../../../vendors/presentation/pages/vendors_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../booking/presentation/pages/booking_page.dart'; // Import booking page
+import 'service_details_page.dart'; // Import service details page
 import '../../../../shared/widgets/bottom_nav/bottom_navigation_bar.dart';
 import '../../../../shared/ads/native_ad_widget.dart';
 
@@ -135,12 +139,27 @@ class HomeContent extends StatelessWidget {
                   ),
                 ),
 
-                // --- Quick Actions ---
-                
+                // --- Quick Booking Widget ---
+                if (!state.isSearching)
+                  const SliverToBoxAdapter(
+                    child: QuickBookingWidget(),
+                  ),
 
                 const SliverToBoxAdapter(
                   child: SizedBox(height: AppConstants.spacingLG),
                 ),
+
+                // --- Featured Halls Widget ---
+                if (!state.isSearching && state.featuredHalls.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: HallsWidget(
+                      halls: state.featuredHalls,
+                      onViewAll: () {
+                        // Navigate to all halls page
+                        // TODO: Implement all halls page
+                      },
+                    ),
+                  ),
 
                 // --- Search Bar ---
                 SliverToBoxAdapter(
@@ -208,11 +227,25 @@ class HomeContent extends StatelessWidget {
                                     child: FeaturedServiceCard(
                                       service: service,
                                       onTap: () {
-                                        context.read<HomeBloc>().add(
-                                              HomeFeaturedServiceSelected(
-                                                serviceId: service.id,
-                                              ),
-                                            );
+                                        // Navigate to service details page first
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => ServiceDetailsPage(
+                                              serviceId: service.id,
+                                              service: service,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      onBookNow: () {
+                                        // Navigate directly to booking page
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => BookingPage(
+                                              serviceId: service.id,
+                                            ),
+                                          ),
+                                        );
                                       },
                                     ),
                                   );
@@ -252,6 +285,73 @@ class HomeContent extends StatelessWidget {
                   ),
                 ],
 
+                // --- Featured Services Section ---
+                if (!state.isSearching && state.featuredServices.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spacingLG,
+                      ),
+                      child: Text(
+                        'الخدمات المميزة',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppColors.primaryGolden,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppConstants.spacingMD),
+                  ),
+
+                  // --- Featured Services Carousel ---
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 280,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppConstants.spacingLG,
+                        ),
+                        itemCount: state.featuredServices.length,
+                        itemBuilder: (context, index) {
+                          final service = state.featuredServices[index];
+                          return Container(
+                            width: 250,
+                            margin: const EdgeInsets.only(right: AppConstants.spacingMD),
+                            child: FeaturedServiceCard(
+                              service: service,
+                              onTap: () {
+                                // Navigate to service details page first
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ServiceDetailsPage(
+                                      serviceId: service.id,
+                                      service: service,
+                                    ),
+                                  ),
+                                );
+                              },
+                              onBookNow: () {
+                                // Navigate directly to booking page
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => BookingPage(
+                                      serviceId: service.id,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+
                 // --- Main Services Section ---
                 if (!state.isSearching) ...[
                   SliverToBoxAdapter(
@@ -278,8 +378,14 @@ class HomeContent extends StatelessWidget {
                     child: SizedBox(
                       height: 200,
                       child: _MainFeatureCarousel(
-                        onSelect: (title, subtitle) =>
-                            _showServiceDialog(context, title, subtitle),
+                        onSelect: (title, subtitle) {
+                          // Navigate to booking page for quick booking
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const BookingPage(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -348,11 +454,12 @@ class HomeContent extends StatelessWidget {
                           return ServiceCategoryCard(
                             category: category,
                             onTap: () {
-                              context.read<HomeBloc>().add(
-                                    HomeServiceCategorySelected(
-                                      categoryId: category.id,
-                                    ),
-                                  );
+                              // Navigate directly to booking page for this category
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => BookingPage(),
+                                ),
+                              );
                             },
                           );
                         },
@@ -377,150 +484,6 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // --- Main Feature Card ---
-  Widget _buildMainFeatureCard(
-    BuildContext context,
-    String title,
-    String subtitle,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppConstants.mediumAnimationDuration,
-        padding: const EdgeInsets.all(AppConstants.spacingMD),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius:
-              BorderRadius.circular(AppConstants.borderRadiusLarge),
-          border: Border.all(
-            color: AppColors.primaryGolden.withOpacity(0.3),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryGolden.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppConstants.spacingLG),
-              decoration: BoxDecoration(
-                gradient: AppColors.goldenGradient,
-                borderRadius:
-                    BorderRadius.circular(AppConstants.borderRadiusLarge),
-                boxShadow: AppColors.goldenShadowSmall,
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).cardColor,
-                size: AppConstants.iconSizeXL,
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingMD),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).textTheme.titleMedium?.color,
-                    fontWeight: FontWeight.bold,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppConstants.spacingSM),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: AppConstants.spacingSM),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spacingSM,
-                vertical: AppConstants.spacingXS,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGolden.withOpacity(0.1),
-                borderRadius:
-                    BorderRadius.circular(AppConstants.borderRadiusSmall),
-              ),
-              child: Text(
-                'اضغط للاستكشاف',
-                style: TextStyle(
-                  color: AppColors.primaryGolden,
-                  fontSize: AppConstants.fontSizeXS,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- Dialog ---
-  void _showServiceDialog(
-      BuildContext context, String title, String description) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(AppConstants.borderRadiusLarge),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppConstants.spacingSM),
-              decoration: BoxDecoration(
-                gradient: AppColors.goldenGradient,
-                borderRadius:
-                    BorderRadius.circular(AppConstants.borderRadius),
-              ),
-              child: Icon(
-                Icons.info,
-                color: Theme.of(context).cardColor,
-                size: AppConstants.iconSizeMD,
-              ),
-            ),
-            const SizedBox(width: AppConstants.spacingMD),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.primaryGolden,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Text(description),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('إغلاق'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('استكشاف'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 class _MainFeatureCarousel extends StatefulWidget {
   final Function(String, String) onSelect;

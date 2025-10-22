@@ -35,10 +35,24 @@ dependencies:
   # Permissions
   permission_handler: ^11.1.0
 
+  # API & Network
+  dio: ^5.4.0
+  flutter_secure_storage: ^9.0.0
+  
+  # JSON Serialization
+  json_annotation: ^4.8.1
+  
+  # Image Caching
+  cached_network_image: ^3.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  
+  # JSON Code Generation
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true

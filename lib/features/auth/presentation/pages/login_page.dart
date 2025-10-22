@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wedly/features/auth/presentation/bloc/auth_event.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/golden_button.dart';
@@ -17,250 +17,311 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _loginFormKey = GlobalKey<FormState>();
+  final _loginEmail = TextEditingController();
+  final _loginPassword = TextEditingController();
+  bool _loginObscure = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _loginEmail.dispose();
+    _loginPassword.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(
-        AuthLoginRequested(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        ),
-      );
+  void _submitLogin() {
+    if (_loginFormKey.currentState?.validate() ?? false) {
+      context.read<AuthBloc>().add(AuthLoginRequested(
+            email: _loginEmail.text.trim(),
+            password: _loginPassword.text,
+          ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.white,
-              AppColors.lightGray,
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.background,
             ],
           ),
         ),
         child: SafeArea(
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is AuthAuthenticated) {
+              if (state is AuthAuthenticated || state is AuthRegistered) {
                 context.go(AppConstants.routeHome);
               } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(state.message),
-                    backgroundColor: AppColors.error,
-                  ),
-                );
+                  backgroundColor: AppColors.errorRed,
+                ));
               }
             },
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppConstants.spacingLG),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: AppConstants.spacingXXL),
-                    
-                    // WEDLY Logo and Title
-                    Container(
-                      padding: const EdgeInsets.all(AppConstants.spacingLG),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldenGradient,
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                        boxShadow: AppColors.goldenShadowMedium,
-                      ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    left: AppConstants.spacingLG,
+                    right: AppConstants.spacingLG,
+                    top: AppConstants.spacingXL,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spacingXL,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - AppConstants.spacingXL * 2,
+                    ),
+                    child: IntrinsicHeight(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Icon(
-                            Icons.favorite,
-                            size: 64,
-                            color: AppColors.white,
+                          _buildHeader(),
+                          const SizedBox(height: AppConstants.spacingXL),
+                          Expanded(
+                            child: _buildLoginCard(context),
                           ),
+                          const SizedBox(height: AppConstants.spacingLG),
+                          _buildRegisterLink(),
                           const SizedBox(height: AppConstants.spacingMD),
-                          Text(
-                            AppConstants.appName,
-                            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.bold,
+                          Center(
+                            child: TextButton(
+                              onPressed: () => context.go(AppConstants.routeForgotPassword),
+                              child: Text(
+                                'نسيت كلمة المرور؟',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: AppConstants.spacingSM),
-                          Text(
-                            AppConstants.appTagline,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                          SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? AppConstants.spacingLG : 0),
                         ],
                       ),
                     ),
-                    
-                    const SizedBox(height: AppConstants.spacingXXL),
-                    
-                    // Welcome Text
-                    Text(
-                      'مرحباً بك في WEDLY',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.primaryGolden,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppConstants.spacingSM),
-                    Text(
-                      'سجل دخولك للوصول إلى خدمات الزفاف الفاخرة',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingXXL),
-                    
-                    // Email Field
-                    AuthTextField(
-                      controller: _emailController,
-                      label: 'البريد الإلكتروني',
-                      hint: 'أدخل بريدك الإلكتروني',
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال البريد الإلكتروني';
-                        }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                          return 'يرجى إدخال بريد إلكتروني صحيح';
-                        }
-                        return null;
-                      },
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingMD),
-                    
-                    // Password Field
-                    AuthTextField(
-                      controller: _passwordController,
-                      label: 'كلمة المرور',
-                      hint: 'أدخل كلمة المرور',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال كلمة المرور';
-                        }
-                        if (value.length < AppConstants.minPasswordLength) {
-                          return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
-                        }
-                        return null;
-                      },
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingSM),
-                    
-                    // Forgot Password
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        onPressed: () {
-                          context.go(AppConstants.routeForgotPassword);
-                        },
-                        child: Text(
-                          'نسيت كلمة المرور؟',
-                          style: TextStyle(
-                            color: AppColors.primaryGolden,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingLG),
-                    
-                    // Login Button
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        return GoldenButton(
-                          text: 'تسجيل الدخول',
-                          onPressed: state is AuthLoading ? null : _handleLogin,
-                          isLoading: state is AuthLoading,
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingLG),
-                    
-                    // Divider
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingMD),
-                          child: Text(
-                            'أو',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingLG),
-                    
-                    // Register Button
-                    OutlinedButton(
-                      onPressed: () {
-                        context.go(AppConstants.routeRegister);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppColors.primaryGolden),
-                        minimumSize: const Size(double.infinity, AppConstants.buttonHeight),
-                      ),
-                      child: Text(
-                        'إنشاء حساب جديد',
-                        style: TextStyle(
-                          color: AppColors.primaryGolden,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: AppConstants.spacingXXL),
-                  ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🔶 Golden Header
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppConstants.spacingXL,
+        horizontal: AppConstants.spacingLG,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.secondary,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'WEDLY',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'تسجيل الدخول',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.login_rounded,
+            color: Theme.of(context).colorScheme.onPrimary,
+            size: 32,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🧩 Login Card
+  Widget _buildLoginCard(BuildContext context) {
+    return Container(
+      key: const ValueKey('loginCard'),
+      padding: const EdgeInsets.all(AppConstants.spacingLG),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _loginFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Text(
+                'تسجيل الدخول',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+            const SizedBox(height: AppConstants.spacingMD),
+            AuthTextField(
+              controller: _loginEmail,
+              label: 'البريد الإلكتروني',
+              hint: 'example@mail.com',
+              prefixIcon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              textCapitalization: TextCapitalization.none,
+              textInputAction: TextInputAction.next,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'يرجى إدخال البريد الإلكتروني';
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'بريد غير صالح';
+                return null;
+              },
+            ),
+            const SizedBox(height: AppConstants.spacingMD),
+            AuthTextField(
+              controller: _loginPassword,
+              label: 'كلمة المرور',
+              hint: '********',
+              prefixIcon: Icons.lock_outline,
+              obscureText: _loginObscure,
+              textCapitalization: TextCapitalization.none,
+              textInputAction: TextInputAction.done,
+              suffixIcon: IconButton(
+                icon: Icon(_loginObscure ? Icons.visibility : Icons.visibility_off, color: AppColors.textSecondary),
+                onPressed: () => setState(() => _loginObscure = !_loginObscure),
+              ),
+              validator: (v) => v == null || v.isEmpty ? 'يرجى إدخال كلمة المرور' : null,
+            ),
+            const SizedBox(height: AppConstants.spacingLG),
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) => GoldenButton(
+                text: 'تسجيل الدخول',
+                onPressed: state is AuthLoading ? null : _submitLogin,
+                isLoading: state is AuthLoading,
+              ),
+            ),
+            const SizedBox(height: AppConstants.spacingMD),
+            _socialRow(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🔗 Register Link
+  Widget _buildRegisterLink() {
+    return Center(
+      child: TextButton(
+        onPressed: () => context.go(AppConstants.routeRegister),
+        child: Text(
+          'ليس لديك حساب؟ إنشاء حساب جديد',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌐 Social Login Row
+  Widget _socialRow() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'أو',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingMD),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Flexible(child: _buildSocialButton(Icons.g_mobiledata, 'Google')),
+            Flexible(child: _buildSocialButton(Icons.facebook, 'Facebook')),
+            
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton(IconData icon, String label) {
+    return InkWell(
+      onTap: () {
+        // TODO: Implement social login
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
+            ),
+          ],
         ),
       ),
     );

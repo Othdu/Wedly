@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_header.dart';
+import '../reviews/presentation/bloc/reviews_bloc.dart';
+import '../reviews/data/models/reviews_model.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -13,59 +16,21 @@ class FeedbackPage extends StatefulWidget {
 class _FeedbackPageState extends State<FeedbackPage> {
   int _selectedStars = 0; // 0 = all
 
-  final List<Map<String, dynamic>> _reviews = [
-    {
-      'name': 'أحمد علي',
-      'rating': 5,
-      'date': '2025-09-21',
-      'comment': 'تجربة رائعة! التنظيم ممتاز والخدمة سريعة والموظفون محترفون جداً.',
-    },
-    {
-      'name': 'سارة محمد',
-      'rating': 4,
-      'date': '2025-09-15',
-      'comment': 'كل شيء جميل، فقط التأخير البسيط في الرد على الاستفسارات.',
-    },
-    {
-      'name': 'زياد فهد',
-      'rating': 3,
-      'date': '2025-08-30',
-      'comment': 'خدمة متوسطة. ممكن تتحسن تجربة الحجز وخيارات الدفع.',
-    },
-  ];
-
-  double get _averageRating {
-    if (_reviews.isEmpty) return 0;
-    final total = _reviews.fold<int>(0, (sum, r) => sum + (r['rating'] as int));
-    return total / _reviews.length;
-  }
-
-  Map<int, int> get _ratingCounts {
-    final Map<int, int> counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    for (final r in _reviews) {
-      final int rating = r['rating'] as int;
-      if (counts.containsKey(rating)) counts[rating] = counts[rating]! + 1;
-    }
-    return counts;
-  }
-
-  double _ratingRatioFor(int stars) {
-    if (_reviews.isEmpty) return 0.0;
-    final counts = _ratingCounts;
-    final int count = counts[stars] ?? 0;
-    return count / _reviews.length;
+  @override
+  void initState() {
+    super.initState();
+    // Load reviews when page initializes
+    context.read<ReviewsBloc>().add(const ReviewsLoadRequested());
   }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _selectedStars == 0
-        ? _reviews
-        : _reviews.where((r) => r['rating'] == _selectedStars).toList();
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          // TODO: Navigate to add review page
+        },
         backgroundColor: AppColors.primaryGolden,
         icon: const Icon(Icons.edit, color: AppColors.white),
         label: const Text(
@@ -73,205 +38,260 @@ class _FeedbackPageState extends State<FeedbackPage> {
           style: TextStyle(color: AppColors.white),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Header Section
-          SliverToBoxAdapter(
-            child: AppHeader(
-              welcomeText: '',
-              subtitleText: '',
-              featureTitle: 'آراء العملاء',
-              logo: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text(
-                    'W',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+      body: BlocConsumer<ReviewsBloc, ReviewsState>(
+        listener: (context, state) {
+          if (state is ReviewsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.errorRed,
               ),
-            ),
-          ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is ReviewsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ReviewsLoaded) {
+            return _buildReviewsContent(state.reviews, state.averageRating, state.ratingCounts);
+          } else if (state is ReviewsError) {
+            return _buildErrorState(state.message);
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
 
-          // Summary Header
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.all(AppConstants.spacingLG),
-              padding: const EdgeInsets.all(AppConstants.spacingLG),
+  Widget _buildReviewsContent(List<Review> reviews, double averageRating, Map<int, int> ratingCounts) {
+    final filtered = _selectedStars == 0
+        ? reviews
+        : reviews.where((r) => r.rating == _selectedStars).toList();
+
+    return CustomScrollView(
+      slivers: [
+        // Header Section
+        SliverToBoxAdapter(
+          child: AppHeader(
+            welcomeText: '',
+            subtitleText: '',
+            featureTitle: 'آراء العملاء',
+            logo: Container(
+              height: 40,
+              width: 40,
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                boxShadow: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkCardShadowMedium
-            : AppColors.cardShadowMedium,
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  // Average Rating
-                  Container(
-                    width: 125,
-                    padding: const EdgeInsets.all(AppConstants.spacingMD),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.goldenGradient,
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                      boxShadow: AppColors.goldenShadowSmall,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _averageRating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: AppColors.white,
-                            fontSize: AppConstants.fontSizeXXXL,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        _buildStarsRow(_averageRating.round()),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${_reviews.length} تقييم',
-                          style: TextStyle(
-                            color: AppColors.white.withOpacity(0.9),
-                            fontSize: AppConstants.fontSizeSM,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+              child: const Center(
+                child: Text(
+                  'W',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: AppConstants.spacingLG),
-                  // Distribution (based on current reviews)
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildRatingBar(context, 5, _ratingRatioFor(5)),
-                        _buildRatingBar(context, 4, _ratingRatioFor(4)),
-                        _buildRatingBar(context, 3, _ratingRatioFor(3)),
-                        _buildRatingBar(context, 2, _ratingRatioFor(2)),
-                        _buildRatingBar(context, 1, _ratingRatioFor(1)),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
+        ),
 
-          // Filters
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
-                children: [
-                  _buildFilterChip('الكل', 0),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('5 نجوم', 5),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('4 نجوم', 4),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('3 نجوم', 3),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('2 نجوم', 2),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('1 نجمة', 1),
-                ],
-              ),
+        // Summary Header
+        SliverToBoxAdapter(
+          child: Container(
+            margin: const EdgeInsets.all(AppConstants.spacingLG),
+            padding: const EdgeInsets.all(AppConstants.spacingLG),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+              boxShadow: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkCardShadowMedium
+                  : AppColors.cardShadowMedium,
             ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: AppConstants.spacingMD)),
-
-          // Reviews List
-          if (filtered.isEmpty)
-            SliverToBoxAdapter(
-              child: _buildEmptyState(context),
-            )
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final r = filtered[index];
-                  return _buildReviewCard(
-                    context,
-                    name: r['name'] as String,
-                    rating: r['rating'] as int,
-                    date: r['date'] as String,
-                    comment: r['comment'] as String,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            averageRating.toStringAsFixed(1),
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryGolden,
+                            ),
+                          ),
+                          _buildStarsRow(averageRating.round()),
+                          Text(
+                            'متوسط التقييم',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            reviews.length.toString(),
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryGolden,
+                            ),
+                          ),
+                          Text(
+                            'إجمالي التقييمات',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppConstants.spacingLG),
+                // Rating breakdown
+                ...List.generate(5, (index) {
+                  final stars = 5 - index;
+                  final count = ratingCounts[stars] ?? 0;
+                  final percentage = reviews.isEmpty ? 0.0 : count / reviews.length;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Text('$stars'),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.star, size: 16, color: AppColors.primaryGolden),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LinearProgressIndicator(
+                            value: percentage,
+                            backgroundColor: Colors.grey.shade300,
+                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryGolden),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('$count'),
+                      ],
+                    ),
                   );
-                },
-                childCount: filtered.length,
+                }),
+              ],
+            ),
+          ),
+        ),
+
+        // Filters
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 44,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLG),
+              children: [
+                _buildFilterChip('الكل', 0),
+                const SizedBox(width: 8),
+                _buildFilterChip('5 نجوم', 5),
+                const SizedBox(width: 8),
+                _buildFilterChip('4 نجوم', 4),
+                const SizedBox(width: 8),
+                _buildFilterChip('3 نجوم', 3),
+                const SizedBox(width: 8),
+                _buildFilterChip('2 نجوم', 2),
+                const SizedBox(width: 8),
+                _buildFilterChip('1 نجمة', 1),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: AppConstants.spacingMD)),
+
+        // Reviews List
+        if (filtered.isEmpty)
+          SliverToBoxAdapter(
+            child: _buildEmptyState(context),
+          )
+        else
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final review = filtered[index];
+                return _buildReviewCard(
+                  context,
+                  name: review.userName,
+                  rating: review.rating,
+                  date: review.formattedDate,
+                  comment: review.comment,
+                );
+              },
+              childCount: filtered.length,
+            ),
+          ),
+
+        const SliverToBoxAdapter(
+          child: SizedBox(height: AppConstants.spacingXXL + 20),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingLG),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.errorRed,
+            ),
+            const SizedBox(height: AppConstants.spacingLG),
+            Text(
+              'حدث خطأ',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
               ),
             ),
-
-          const SliverToBoxAdapter(
-            child: SizedBox(height: AppConstants.spacingXXL + 20),
-          ),
-        ],
+            const SizedBox(height: AppConstants.spacingMD),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppConstants.spacingLG),
+            ElevatedButton(
+              onPressed: () {
+                context.read<ReviewsBloc>().add(const ReviewsLoadRequested());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGolden,
+                foregroundColor: AppColors.white,
+              ),
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStarsRow(int stars) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (i) {
-        final filled = i < stars;
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
         return Icon(
-          filled ? Icons.star : Icons.star_border,
-          color: AppColors.white,
-          size: 18,
+          index < stars ? Icons.star : Icons.star_border,
+          color: AppColors.primaryGolden,
+          size: 20,
         );
       }),
-    );
-  }
-
-  Widget _buildRatingBar(BuildContext context, int stars, double ratio) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 50,
-            child: Row(children: [
-              Text('$stars', style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(width: 2),
-              const Icon(Icons.star, size: 14, color: AppColors.primaryGolden),
-            ]),
-          ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Stack(
-                children: [
-                  Container(
-                    height: 10, 
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkSurfaceVariant
-                        : AppColors.lightGray,
-                  ),
-                  FractionallySizedBox(
-                    widthFactor: ratio.clamp(0.0, 1.0),
-                    child: Container(height: 10, color: AppColors.primaryGolden.withOpacity(0.8)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -319,112 +339,86 @@ class _FeedbackPageState extends State<FeedbackPage> {
     required String comment,
   }) {
     String initials = name.isNotEmpty ? name.trim().split(' ').map((e) => e[0]).take(2).join() : '؟';
-
+    
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppConstants.spacingLG,
         vertical: AppConstants.spacingSM,
       ),
+      padding: const EdgeInsets.all(AppConstants.spacingLG),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         boxShadow: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkCardShadowMedium
-            : AppColors.cardShadowMedium,
-        border: Border.all(color: AppColors.primaryGolden.withOpacity(0.08)),
+            ? AppColors.darkCardShadowSmall
+            : AppColors.cardShadowSmall,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingMD),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: AppColors.primaryGolden.withOpacity(0.15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Avatar
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: AppColors.goldenGradient,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
                   child: Text(
                     initials,
                     style: const TextStyle(
-                      color: AppColors.primaryGolden,
+                      color: AppColors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-                const SizedBox(width: AppConstants.spacingMD),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+              ),
+              const SizedBox(width: AppConstants.spacingMD),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      Row(
-                        children: [
-                          Row(
-                            children: List.generate(5, (i) => Icon(
-                                  i < rating ? Icons.star : Icons.star_border,
-                                  size: 16,
-                                  color: AppColors.primaryGolden,
-                                )),
+                    ),
+                    Row(
+                      children: [
+                        ...List.generate(5, (index) {
+                          return Icon(
+                            index < rating ? Icons.star : Icons.star_border,
+                            color: AppColors.primaryGolden,
+                            size: 16,
+                          );
+                        }),
+                        const SizedBox(width: 8),
+                        Text(
+                          date,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            date,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.more_horiz, 
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          if (comment.isNotEmpty) ...[
             const SizedBox(height: AppConstants.spacingMD),
             Text(
               comment,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.5,
-                  ),
-            ),
-            const SizedBox(height: AppConstants.spacingSM),
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.thumb_up_alt_outlined, size: 18),
-                  label: const Text('مفيد'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).textTheme.bodyMedium?.color,
-                    side: BorderSide(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkBorder
-                          : Colors.grey.shade300,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spacingSM),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('الإبلاغ'),
-                ),
-              ],
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -451,29 +445,26 @@ class _FeedbackPageState extends State<FeedbackPage> {
               borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
             ),
             child: const Icon(
-              Icons.rate_review_outlined,
+              Icons.star_border,
               size: 64,
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: AppConstants.spacingLG),
           Text(
-            'لا توجد آراء بعد',
+            'لا توجد تقييمات بعد',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppConstants.spacingMD),
           Text(
-            'كن أول من يشارك رأيه حول خدماتنا وتجربته معنا',
-            style: Theme.of(context).textTheme.bodyLarge,
+            'كن أول من يقيّم خدماتنا',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppConstants.spacingLG),
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('أضف رأيك الآن'),
           ),
         ],
       ),
