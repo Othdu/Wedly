@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/storage_service.dart';
-import '../../../home/presentation/pages/home_page.dart';
 import '../../data/models/onboarding_model.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -155,25 +155,12 @@ class _OnboardingPageState extends State<OnboardingPage>
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const HomePage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
+      // Use GoRouter to navigate to home
+      context.go(AppConstants.routeHome);
     } catch (e) {
       // Fallback navigation
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+      context.go(AppConstants.routeHome);
     }
   }
 

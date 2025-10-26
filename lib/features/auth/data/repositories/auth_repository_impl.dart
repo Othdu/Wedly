@@ -16,6 +16,7 @@ abstract class AuthRepository {
     required String phone,
     required String gender,
     required String role,
+    String? businessType,
   });
   Future<User> getCurrentUser();
   Future<void> logout();
@@ -27,6 +28,7 @@ abstract class AuthRepository {
     String? lastName,
     String? phone,
     String? profileImage,
+    String? username,
   });
   Future<bool> isAuthenticated();
 }
@@ -43,7 +45,19 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final request = LoginRequest(email: email, password: password);
       final response = await _remoteDataSource.login(request);
-      return response.user.toDomain();
+      
+      // Always try to fetch complete user profile data
+      print('Fetching user profile after login...');
+      try {
+        final profile = await _remoteDataSource.getProfile();
+        print('Profile fetched successfully: ${profile.firstName} ${profile.lastName}');
+        return profile.toDomain();
+      } catch (e) {
+        print('Failed to fetch profile: $e');
+        print('Using login response user data: ${response.user.email}');
+        // If profile fetch fails, use response data as fallback
+        return response.user.toDomain();
+      }
     } on ApiException {
       rethrow;
     } catch (e) {
@@ -62,6 +76,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String phone,
     required String gender,
     required String role,
+    String? businessType,
   }) async {
     try {
       final request = RegisterRequest(
@@ -74,15 +89,17 @@ class AuthRepositoryImpl implements AuthRepository {
         phone: phone,
         gender: gender,
         role: role,
+        businessType: businessType,
       );
       final response = await _remoteDataSource.register(request);
       // Create a User object from the registration response
       return User(
-        id: '0', // Temporary ID as string
+        id: response.id?.toString() ?? '0'.toString(),
         email: response.email,
-        firstName: response.username, // Using username as firstName
-        lastName: '', // Not provided in response
+        firstName: response.firstName ?? firstName, // Use firstName from response or fallback to the one we sent
+        lastName: response.lastName ?? lastName, // Use lastName from response or fallback to the one we sent
         phone: response.phone,
+        username: response.username, // Include username from response
         createdAt: DateTime.now(),
       );
     } on ApiException {
@@ -167,6 +184,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String? lastName,
     String? phone,
     String? profileImage,
+    String? username,
   }) async {
     try {
       final request = UpdateProfileRequest(
@@ -174,6 +192,7 @@ class AuthRepositoryImpl implements AuthRepository {
         lastName: lastName,
         phone: phone,
         profileImage: profileImage,
+        username: username,
       );
       final userModel = await _remoteDataSource.updateProfile(request);
       return userModel.toDomain();

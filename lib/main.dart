@@ -10,7 +10,6 @@ import 'core/utils/storage_service.dart';
 import 'core/utils/app_router.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
-import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/home/presentation/bloc/home_event.dart';
 import 'features/booking/presentation/bloc/booking_bloc.dart';
@@ -62,50 +61,59 @@ class WEDLYApp extends StatelessWidget {
           create: (context) => ThemeCubit(storageService)..initialize(),
         ),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (context, themeState) {
-          return BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, authState) {
-              return MaterialApp.router(
-                title: AppConstants.appName,
-                debugShowCheckedModeBanner: false,
-                
-                // Router Configuration
-                routerConfig: AppRouter.createRouter(context.read<AuthBloc>()),
-                
-                // Theme Configuration
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: themeState.themeMode == AppThemeMode.system
-                    ? ThemeMode.system
-                    : themeState.themeMode == AppThemeMode.dark
-                        ? ThemeMode.dark
-                        : ThemeMode.light,
-                
-                // Localization Configuration
-                localizationsDelegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: const [
-                  Locale('ar', 'SA'), // Arabic (Saudi Arabia)
-                  Locale('en', 'US'), // English (United States)
-                ],
-                locale: const Locale('ar', 'SA'), // Default to Arabic
-                
-                // Builder for additional configurations
-                builder: (context, child) {
-                  return Directionality(
-                    textDirection: TextDirection.rtl, // RTL for Arabic
-                    child: child!,
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+      child: _AppContent(),
+    );
+  }
+}
+
+class _AppContent extends StatelessWidget {
+  const _AppContent();
+
+  @override
+  Widget build(BuildContext context) {
+    // Create router once and reuse it
+    final routerConfig = AppRouter.createRouter(context.read<AuthBloc>());
+    
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      buildWhen: (previous, current) => previous.themeMode != current.themeMode,
+      builder: (context, themeState) {
+        return MaterialApp.router(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          
+          // Router Configuration - use the cached router
+          routerConfig: routerConfig,
+          
+          // Theme Configuration
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeState.themeMode == AppThemeMode.system
+              ? ThemeMode.system
+              : themeState.themeMode == AppThemeMode.dark
+                  ? ThemeMode.dark
+                  : ThemeMode.light,
+          
+          // Localization Configuration
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ar', 'SA'), // Arabic (Saudi Arabia)
+            Locale('en', 'US'), // English (United States)
+          ],
+          locale: const Locale('ar', 'SA'), // Default to Arabic
+          
+          // Builder for additional configurations
+          builder: (context, child) {
+            return Directionality(
+              textDirection: TextDirection.rtl, // RTL for Arabic
+              child: child!,
+            );
+          },
+        );
+      },
     );
   }
 }

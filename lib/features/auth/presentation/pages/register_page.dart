@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/storage_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -30,6 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _regConfirmObscure = true;
   String? _selectedGender;
   String? _selectedRole;
+  String? _selectedBusinessType;
 
   @override
   void dispose() {
@@ -43,6 +45,27 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  Future<void> _checkOnboardingAndNavigate(BuildContext context) async {
+    if (!mounted) return;
+    
+    final storageService = await StorageService.getInstance();
+    final isOnboardingCompleted = await storageService.isOnboardingCompleted();
+    
+    if (!mounted) return;
+    
+    // Delay to let auth state settle
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    if (!mounted || !context.mounted) return;
+    
+    // Navigate based on onboarding status
+    if (!isOnboardingCompleted) {
+      context.go(AppConstants.routeOnboarding);
+    } else {
+      context.go(AppConstants.routeHome);
+    }
+  }
+
   void _submitRegister() {
     if (_registerFormKey.currentState?.validate() ?? false) {
         // Check if gender and role are selected
@@ -50,6 +73,17 @@ class _RegisterPageState extends State<RegisterPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('يرجى اختيار الجنس ونوع الحساب'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        // Check if business type is required for service providers
+        if (_selectedRole == 'SERVICE_PROVIDER' && _selectedBusinessType == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يرجى اختيار نوع النشاط التجاري'),
               backgroundColor: Colors.red,
             ),
           );
@@ -66,6 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
           phone: _regPhone.text.trim(),
           gender: _selectedGender!,
           role: _selectedRole!,
+          businessType: _selectedBusinessType,
         ));
     }
   }
@@ -89,12 +124,15 @@ class _RegisterPageState extends State<RegisterPage> {
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthAuthenticated || state is AuthRegistered) {
-                context.go(AppConstants.routeHome);
+                // Check onboarding status before navigating
+                _checkOnboardingAndNavigate(context);
               } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(state.message),
-                  backgroundColor: AppColors.errorRed,
-                ));
+                if (mounted && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(state.message),
+                    backgroundColor: AppColors.errorRed,
+                  ));
+                }
               }
             },
             child: LayoutBuilder(
@@ -283,6 +321,22 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: AppConstants.spacingMD),
             
+            // Last Name Field
+            AuthTextField(
+              controller: _regLastName,
+              label: 'الاسم الأخير',
+              hint: 'أدخل اسمك الأخير',
+              prefixIcon: Icons.person_outline,
+              textCapitalization: TextCapitalization.words,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'يرجى إدخال الاسم الأخير';
+                if (v.length < 2) return 'الاسم الأخير يجب أن يكون حرفين على الأقل';
+                if (!RegExp(r'^[a-zA-Z\u0600-\u06FF\s]+$').hasMatch(v)) return 'الاسم يمكن أن يحتوي على أحرف فقط';
+                return null;
+              },
+            ),
+            const SizedBox(height: AppConstants.spacingMD),
+            
             
             // Phone Field
             AuthTextField(
@@ -313,9 +367,28 @@ class _RegisterPageState extends State<RegisterPage> {
             // Role Selection
             RoleDropdown(
               value: _selectedRole,
-              onChanged: (value) => setState(() => _selectedRole = value!),
+              onChanged: (value) {
+                setState(() {
+                  _selectedRole = value!;
+                  // Clear business type if role changes
+                  if (_selectedRole != 'SERVICE') {
+                    _selectedBusinessType = null;
+                  }
+                });
+              },
               validator: (v) => v == null ? 'يرجى اختيار نوع الحساب' : null,
             ),
+            
+            // Business Type Selection (only for Service Provider)
+            if (_selectedRole == 'SERVICE') ...[
+              const SizedBox(height: AppConstants.spacingMD),
+              BusinessTypeDropdown(
+                value: _selectedBusinessType,
+                onChanged: (value) => setState(() => _selectedBusinessType = value!),
+                validator: (v) => v == null ? 'يرجى اختيار نوع النشاط التجاري' : null,
+              ),
+            ],
+            
             const SizedBox(height: AppConstants.spacingMD),
             
             // Password Field

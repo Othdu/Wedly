@@ -8,6 +8,7 @@ import '../../../favorites/presentation/pages/favorites_list_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import 'edit_profile_page.dart';
 import '../../../booking/presentation/pages/booking_list_page.dart';
 import '../bloc/profile_bloc.dart';
 
@@ -71,92 +72,106 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
                 boxShadow: AppColors.goldenShadowMedium,
               ),
-              child: Row(
-                children: [
-                  // Profile Avatar
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(40),
-                      boxShadow: AppColors.cardShadowMedium,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 48,
-                      color: AppColors.primaryGolden,
-                    ),
-                  ),
-                  
-                  const SizedBox(width: AppConstants.spacingLG),
-                  
-                  // User Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            String greeting = 'مرحباً بك';
-                            bool isAuthed = false;
-                            try {
-                              final authState = context.read<AuthBloc>().state;
-                              if (authState is AuthAuthenticated) {
-                                final name = authState.user.fullName.trim();
-                                greeting = name.isNotEmpty
-                                    ? 'مرحباً، $name'
-                                    : 'مرحباً، ${authState.user.email}';
-                                isAuthed = true;
-                              } else if (authState is AuthRegistered) {
-                                final name = authState.user.fullName.trim();
-                                greeting = name.isNotEmpty
-                                    ? 'مرحباً، $name'
-                                    : 'مرحباً، ${authState.user.email}';
-                                isAuthed = true;
-                              }
-                            } catch (_) {
-                              // AuthBloc not provided; keep defaults
-                            }
+              child: Builder(
+                builder: (context) {
+                  String greeting = 'مرحباً بك';
+                  bool isAuthed = false;
+                  try {
+                    final authState = context.read<AuthBloc>().state;
+                    if (authState is AuthAuthenticated || authState is AuthRegistered) {
+                      isAuthed = true;
+                      if (authState is AuthAuthenticated) {
+                        greeting = 'مرحباً ${authState.user.displayName}';
+                      } else if (authState is AuthRegistered) {
+                        greeting = 'مرحباً، ${authState.user.displayName}';
+                      }
+                    }
+                  } catch (e) {
+                    print('Profile - Error reading auth state: $e');
+                  }
 
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  greeting,
-                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                        color: AppColors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                if (!isAuthed) ...[
-                                  const SizedBox(height: AppConstants.spacingSM),
+                  return InkWell(
+                    onTap: isAuthed
+                        ? () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const EditProfilePage(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: Row(
+                      children: [
+                        // Profile Avatar
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(40),
+                            boxShadow: AppColors.cardShadowMedium,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 48,
+                            color: AppColors.primaryGolden,
+                          ),
+                        ),
+                        
+                        const SizedBox(width: AppConstants.spacingLG),
+                        
+                        // User Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    'سجل دخولك للوصول إلى جميع الميزات',
-                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                          color: AppColors.white.withOpacity(0.9),
+                                    greeting,
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                          color: AppColors.white,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                   ),
-                                  const SizedBox(height: AppConstants.spacingMD),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Navigate to login
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.white,
-                                      foregroundColor: AppColors.primaryGolden,
+                                  if (!isAuthed) ...[
+                                    const SizedBox(height: AppConstants.spacingSM),
+                                    Text(
+                                      'سجل دخولك للوصول إلى جميع الميزات',
+                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                            color: AppColors.white.withOpacity(0.9),
+                                          ),
                                     ),
-                                    child: const Text('تسجيل الدخول'),
-                                  ),
+                                    const SizedBox(height: AppConstants.spacingMD),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        // Navigate to login
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.white,
+                                        foregroundColor: AppColors.primaryGolden,
+                                      ),
+                                      child: const Text('تسجيل الدخول'),
+                                    ),
+                                  ] else ...[
+                                    const SizedBox(height: AppConstants.spacingSM),
+                                    Text(
+                                      'اضغط للتعديل',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: AppColors.white.withOpacity(0.8),
+                                          ),
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            );
-                          },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

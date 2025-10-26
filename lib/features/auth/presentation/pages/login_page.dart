@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/storage_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -27,6 +28,27 @@ class _LoginPageState extends State<LoginPage> {
     _loginEmail.dispose();
     _loginPassword.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkOnboardingAndNavigate(BuildContext context) async {
+    if (!mounted) return;
+    
+    final storageService = await StorageService.getInstance();
+    final isOnboardingCompleted = await storageService.isOnboardingCompleted();
+    
+    if (!mounted) return;
+    
+    // Delay to let auth state settle
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    if (!mounted || !context.mounted) return;
+    
+    // Navigate based on onboarding status
+    if (!isOnboardingCompleted) {
+      context.go(AppConstants.routeOnboarding);
+    } else {
+      context.go(AppConstants.routeHome);
+    }
   }
 
   void _submitLogin() {
@@ -57,12 +79,15 @@ class _LoginPageState extends State<LoginPage> {
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthAuthenticated || state is AuthRegistered) {
-                context.go(AppConstants.routeHome);
+                // Check onboarding status before navigating
+                _checkOnboardingAndNavigate(context);
               } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(state.message),
-                  backgroundColor: AppColors.errorRed,
-                ));
+                if (mounted && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(state.message),
+                    backgroundColor: AppColors.errorRed,
+                  ));
+                }
               }
             },
             child: LayoutBuilder(
@@ -211,15 +236,14 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: AppConstants.spacingMD),
             AuthTextField(
               controller: _loginEmail,
-              label: 'البريد الإلكتروني',
-              hint: 'example@mail.com',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
+              label: 'اسم المستخدم أو البريد الإلكتروني',
+              hint: '',
+              prefixIcon: Icons.account_circle_outlined,
+              keyboardType: TextInputType.text,
               textCapitalization: TextCapitalization.none,
               textInputAction: TextInputAction.next,
               validator: (v) {
-                if (v == null || v.isEmpty) return 'يرجى إدخال البريد الإلكتروني';
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'بريد غير صالح';
+                if (v == null || v.isEmpty) return 'يرجى إدخال اسم المستخدم أو البريد الإلكتروني';
                 return null;
               },
             ),
@@ -227,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
             AuthTextField(
               controller: _loginPassword,
               label: 'كلمة المرور',
-              hint: '********',
+              hint: '',
               prefixIcon: Icons.lock_outline,
               obscureText: _loginObscure,
               textCapitalization: TextCapitalization.none,

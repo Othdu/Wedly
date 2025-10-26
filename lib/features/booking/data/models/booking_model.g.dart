@@ -9,67 +9,48 @@ part of 'booking_model.dart';
 BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
       id: (json['id'] as num).toInt(),
       userId: (json['userId'] as num).toInt(),
-      hallId: (json['hallId'] as num?)?.toInt(),
-      serviceId: (json['serviceId'] as num?)?.toInt(),
+      venueId: (json['venueId'] as num?)?.toInt(),
       eventDate: DateTime.parse(json['eventDate'] as String),
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
-      guestCount: (json['guestCount'] as num).toInt(),
-      totalPrice: (json['totalPrice'] as num).toDouble(),
-      status: json['status'] as String,
-      paymentStatus: json['paymentStatus'] as String,
-      specialRequests: json['specialRequests'] as String?,
-      notes: json['notes'] as String?,
-      eventDetails: json['eventDetails'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      hall: json['hall'] == null
+      totalPrice: (json['totalPrice'] as num?)?.toDouble(),
+      status: json['status'] as String,
+      venue: json['venue'] == null
           ? null
-          : BookingHallModel.fromJson(json['hall'] as Map<String, dynamic>),
-      service: json['service'] == null
-          ? null
-          : BookingServiceModel.fromJson(
-              json['service'] as Map<String, dynamic>),
+          : BookingVenueModel.fromJson(json['venue'] as Map<String, dynamic>),
+      serviceBookings: (json['serviceBookings'] as List<dynamic>?)
+          ?.map((e) => ServiceBookingModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$BookingModelToJson(BookingModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'userId': instance.userId,
-      'hallId': instance.hallId,
-      'serviceId': instance.serviceId,
+      'venueId': instance.venueId,
       'eventDate': instance.eventDate.toIso8601String(),
-      'startTime': instance.startTime.toIso8601String(),
-      'endTime': instance.endTime.toIso8601String(),
-      'guestCount': instance.guestCount,
+      'createdAt': instance.createdAt.toIso8601String(),
       'totalPrice': instance.totalPrice,
       'status': instance.status,
-      'paymentStatus': instance.paymentStatus,
-      'specialRequests': instance.specialRequests,
-      'notes': instance.notes,
-      'eventDetails': instance.eventDetails,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
-      'hall': instance.hall,
-      'service': instance.service,
+      'venue': instance.venue,
+      'serviceBookings': instance.serviceBookings,
     };
 
-BookingHallModel _$BookingHallModelFromJson(Map<String, dynamic> json) =>
-    BookingHallModel(
+BookingVenueModel _$BookingVenueModelFromJson(Map<String, dynamic> json) =>
+    BookingVenueModel(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
-      location: json['location'] as String,
+      address: json['address'] as String?,
       image: json['image'] as String?,
-      price: (json['price'] as num).toDouble(),
+      pricePerDay: (json['pricePerDay'] as num).toDouble(),
     );
 
-Map<String, dynamic> _$BookingHallModelToJson(BookingHallModel instance) =>
+Map<String, dynamic> _$BookingVenueModelToJson(BookingVenueModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'location': instance.location,
+      'address': instance.address,
       'image': instance.image,
-      'price': instance.price,
+      'pricePerDay': instance.pricePerDay,
     };
 
 BookingServiceModel _$BookingServiceModelFromJson(Map<String, dynamic> json) =>
@@ -91,60 +72,58 @@ Map<String, dynamic> _$BookingServiceModelToJson(
       'price': instance.price,
     };
 
+ServiceBookingModel _$ServiceBookingModelFromJson(Map<String, dynamic> json) =>
+    ServiceBookingModel(
+      id: (json['id'] as num).toInt(),
+      service:
+          BookingServiceModel.fromJson(json['service'] as Map<String, dynamic>),
+      quantity: (json['quantity'] as num).toInt(),
+      price: (json['price'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$ServiceBookingModelToJson(
+        ServiceBookingModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'service': instance.service,
+      'quantity': instance.quantity,
+      'price': instance.price,
+    };
+
 CreateBookingRequest _$CreateBookingRequestFromJson(
         Map<String, dynamic> json) =>
     CreateBookingRequest(
-      hallId: (json['hallId'] as num?)?.toInt(),
-      serviceId: (json['serviceId'] as num?)?.toInt(),
+      venueId: (json['venueId'] as num).toInt(),
+      serviceIds: (json['serviceIds'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
       eventDate: DateTime.parse(json['eventDate'] as String),
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
-      guestCount: (json['guestCount'] as num).toInt(),
-      specialRequests: json['specialRequests'] as String?,
-      notes: json['notes'] as String?,
-      eventDetails: json['eventDetails'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$CreateBookingRequestToJson(
         CreateBookingRequest instance) =>
     <String, dynamic>{
-      'hallId': instance.hallId,
-      'serviceId': instance.serviceId,
+      'venueId': instance.venueId,
+      'serviceIds': instance.serviceIds,
       'eventDate': instance.eventDate.toIso8601String(),
-      'startTime': instance.startTime.toIso8601String(),
-      'endTime': instance.endTime.toIso8601String(),
-      'guestCount': instance.guestCount,
-      'specialRequests': instance.specialRequests,
-      'notes': instance.notes,
-      'eventDetails': instance.eventDetails,
     };
 
 UpdateBookingRequest _$UpdateBookingRequestFromJson(
         Map<String, dynamic> json) =>
     UpdateBookingRequest(
+      venueId: (json['venueId'] as num?)?.toInt(),
+      serviceIds: (json['serviceIds'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
       eventDate: json['eventDate'] == null
           ? null
           : DateTime.parse(json['eventDate'] as String),
-      startTime: json['startTime'] == null
-          ? null
-          : DateTime.parse(json['startTime'] as String),
-      endTime: json['endTime'] == null
-          ? null
-          : DateTime.parse(json['endTime'] as String),
-      guestCount: (json['guestCount'] as num?)?.toInt(),
-      specialRequests: json['specialRequests'] as String?,
-      notes: json['notes'] as String?,
-      eventDetails: json['eventDetails'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$UpdateBookingRequestToJson(
         UpdateBookingRequest instance) =>
     <String, dynamic>{
+      'venueId': instance.venueId,
+      'serviceIds': instance.serviceIds,
       'eventDate': instance.eventDate?.toIso8601String(),
-      'startTime': instance.startTime?.toIso8601String(),
-      'endTime': instance.endTime?.toIso8601String(),
-      'guestCount': instance.guestCount,
-      'specialRequests': instance.specialRequests,
-      'notes': instance.notes,
-      'eventDetails': instance.eventDetails,
     };

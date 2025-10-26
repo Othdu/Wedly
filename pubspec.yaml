@@ -35,6 +35,10 @@ dependencies:
   # Permissions
   permission_handler: ^11.1.0
 
+  # Image Picking
+  image_picker: ^1.0.7
+  image: ^4.1.7
+
   # API & Network
   dio: ^5.4.0
   flutter_secure_storage: ^9.0.0

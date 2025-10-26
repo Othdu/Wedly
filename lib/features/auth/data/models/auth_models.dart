@@ -3,9 +3,10 @@ import 'package:json_annotation/json_annotation.dart';
 part 'auth_models.g.dart';
 
 /// Login request model
+/// Supports login with either email or username
 @JsonSerializable()
 class LoginRequest {
-  final String email;
+  final String email; // This field accepts both email and username
   final String password;
 
   const LoginRequest({
@@ -16,7 +17,24 @@ class LoginRequest {
   factory LoginRequest.fromJson(Map<String, dynamic> json) =>
       _$LoginRequestFromJson(json);
 
-  Map<String, dynamic> toJson() => _$LoginRequestToJson(this);
+  Map<String, dynamic> toJson() {
+    // Determine if the email field is actually an email or username
+    final isEmail = email.contains('@');
+    
+    if (isEmail) {
+      // If it contains @, send as email
+      return {
+        'email': email,
+        'password': password,
+      };
+    } else {
+      // Otherwise, send as username
+      return {
+        'username': email,
+        'password': password,
+      };
+    }
+  }
 }
 
 /// Login response model
@@ -53,6 +71,8 @@ class RegisterRequest {
   final String phone;
   final String gender;
   final String role;
+  @JsonKey(name: 'business_type', includeIfNull: false)
+  final String? businessType;
 
   const RegisterRequest({
     required this.email,
@@ -64,6 +84,7 @@ class RegisterRequest {
     required this.phone,
     required this.gender,
     required this.role,
+    this.businessType,
   });
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
@@ -75,6 +96,7 @@ class RegisterRequest {
 /// Register response model
 @JsonSerializable()
 class RegisterResponse {
+  final int? id;
   final String username;
   final String email;
   final String phone;
@@ -82,14 +104,21 @@ class RegisterResponse {
   final String role;
   @JsonKey(name: 'business_type')
   final String businessType;
+  @JsonKey(name: 'first_name')
+  final String? firstName;
+  @JsonKey(name: 'last_name')
+  final String? lastName;
 
   const RegisterResponse({
+    this.id,
     required this.username,
     required this.email,
     required this.phone,
     required this.gender,
     required this.role,
     required this.businessType,
+    this.firstName,
+    this.lastName,
   });
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) =>
@@ -103,6 +132,7 @@ class RegisterResponse {
 class UserModel {
   final int id;
   final String email;
+  final String? username;
   final String firstName;
   final String lastName;
   final String? phone;
@@ -116,6 +146,7 @@ class UserModel {
   const UserModel({
     required this.id,
     required this.email,
+    this.username,
     required this.firstName,
     required this.lastName,
     this.phone,
@@ -128,12 +159,25 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    print('=== PARSING USER MODEL ===');
+    print('JSON keys: ${json.keys.toList()}');
+    print('Email: ${json['email']}');
+    print('Username: ${json['username']}');
+    print('firstName field: ${json['firstName'] ?? json['first_name']}');
+    print('lastName field: ${json['lastName'] ?? json['last_name']}');
+    
     // Handle both camelCase and snake_case field names
+    final firstName = json['firstName'] as String? ?? json['first_name'] as String? ?? '';
+    final lastName = json['lastName'] as String? ?? json['last_name'] as String? ?? '';
+    
+    print('Parsed firstName: $firstName, lastName: $lastName');
+    
     return UserModel(
       id: (json['id'] as num).toInt(),
       email: json['email'] as String,
-      firstName: json['firstName'] as String? ?? json['first_name'] as String? ?? '',
-      lastName: json['lastName'] as String? ?? json['last_name'] as String? ?? '',
+      username: json['username'] as String?,
+      firstName: firstName,
+      lastName: lastName,
       phone: json['phone'] as String?,
       profileImage: json['profileImage'] as String? ?? json['profile_image'] as String?,
       isActive: json['isActive'] as bool? ?? json['is_active'] as bool? ?? true,
@@ -171,6 +215,7 @@ class UserModel {
       firstName: firstName,
       lastName: lastName,
       phone: phone,
+      username: username,
       createdAt: dateJoined,
     );
   }
@@ -183,6 +228,7 @@ class User {
   final String firstName;
   final String lastName;
   final String? phone;
+  final String? username;
   final DateTime? createdAt;
 
   const User({
@@ -191,11 +237,20 @@ class User {
     required this.firstName,
     required this.lastName,
     this.phone,
+    this.username,
     this.createdAt,
   });
 
   /// Get full name by combining first and last name
   String get fullName => '$firstName $lastName'.trim();
+  
+  /// Get display name - uses fullName if available, otherwise username, otherwise email
+  String get displayName {
+    final name = fullName;
+    if (name.isNotEmpty) return name;
+    if (username != null && username!.isNotEmpty) return username!;
+    return email;
+  }
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -204,6 +259,7 @@ class User {
       firstName: json['first_name'] as String? ?? '',
       lastName: json['last_name'] as String? ?? '',
       phone: json['phone'] as String?,
+      username: json['username'] as String?,
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at'] as String)
           : null,
@@ -216,6 +272,7 @@ class User {
       'email': email,
       'full_name': fullName,
       'phone': phone,
+      'username': username,
       'created_at': createdAt?.toIso8601String(),
     };
   }
@@ -286,16 +343,26 @@ class UpdateProfileRequest {
   final String? lastName;
   final String? phone;
   final String? profileImage;
+  final String? username;
 
   const UpdateProfileRequest({
     this.firstName,
     this.lastName,
     this.phone,
     this.profileImage,
+    this.username,
   });
 
   factory UpdateProfileRequest.fromJson(Map<String, dynamic> json) =>
       _$UpdateProfileRequestFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UpdateProfileRequestToJson(this);
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    if (firstName != null) map['first_name'] = firstName;
+    if (lastName != null) map['last_name'] = lastName;
+    if (phone != null) map['phone'] = phone;
+    if (username != null) map['username'] = username;
+    if (profileImage != null) map['profile_image'] = profileImage;
+    return map;
+  }
 }

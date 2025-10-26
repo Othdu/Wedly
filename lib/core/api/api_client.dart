@@ -10,7 +10,16 @@ class ApiClient {
   late final Dio _dio;
   
   ApiClient() {
-    _dio = Dio();
+    _dio = Dio(BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: ApiConstants.connectTimeout,
+      receiveTimeout: ApiConstants.receiveTimeout,
+      sendTimeout: ApiConstants.sendTimeout,
+      headers: {
+        'Content-Type': ApiConstants.contentType,
+        'Accept': ApiConstants.acceptHeader,
+      },
+    ));
     _setupInterceptors();
   }
 
@@ -20,29 +29,35 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Add base URL if not already present
-          if (!options.path.startsWith('http')) {
-            options.baseUrl = ApiConstants.baseUrl;
-          }
-          
-          // Add default headers
-          options.headers['Content-Type'] = ApiConstants.contentType;
-          options.headers['Accept'] = ApiConstants.acceptHeader;
+          print('=== REQUEST INTERCEPTOR ===');
+          print('URL: ${options.uri}');
+          print('Method: ${options.method}');
+          print('Headers: ${options.headers}');
           
           // Add authorization header if available
           final authHeader = await TokenManager.getAuthorizationHeader();
           if (authHeader != null) {
             options.headers[ApiConstants.authorizationHeader] = authHeader;
+            print('Added auth header');
           }
           
           handler.next(options);
         },
         onError: (error, handler) async {
+          print('=== INTERCEPTOR ERROR ===');
+          print('Error Type: ${error.type}');
+          print('Error Message: ${error.message}');
+          print('Response Status: ${error.response?.statusCode}');
+          print('Error Object: ${error.error}');
+          print('Error Object Type: ${error.error.runtimeType}');
+          
           // Handle 401 errors by trying to refresh token
           if (error.response?.statusCode == 401) {
+            print('Attempting to refresh token...');
             try {
               final newToken = await TokenManager.refreshAccessToken();
               if (newToken != null) {
+                print('Token refresh successful, retrying request');
                 // Retry the original request with new token
                 final options = error.requestOptions;
                 options.headers[ApiConstants.authorizationHeader] = 
@@ -53,13 +68,18 @@ class ApiClient {
                 return;
               }
             } catch (e) {
+              print('Token refresh failed: $e');
               // Refresh failed, clear tokens and continue with error
               await TokenManager.clearTokens();
             }
           }
           
           // Convert DioException to ApiException
+          print('Converting error to ApiException');
           final apiException = _handleDioException(error);
+          print('ApiException type: ${apiException.runtimeType}');
+          print('ApiException message: ${apiException.message}');
+          
           handler.reject(DioException(
             requestOptions: error.requestOptions,
             error: apiException,
@@ -157,15 +177,56 @@ class ApiClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.post<T>(
+      print('=== API CLIENT POST REQUEST ===');
+      print('URL: ${ApiConstants.baseUrl}$path');
+      print('Data: $data');
+      print('Headers: ${options?.headers}');
+      
+      final response = await _dio.post<T>(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      
+      print('=== API CLIENT POST RESPONSE ===');
+      print('Status Code: ${response.statusCode}');
+      print('Response Data: ${response.data}');
+      
+      return response;
     } on DioException catch (e) {
-      throw e.error as ApiException;
+      print('=== API CLIENT ERROR ===');
+      print('Error Type: ${e.type}');
+      print('Error Message: ${e.message}');
+      print('Response Status: ${e.response?.statusCode}');
+      print('Response Data: ${e.response?.data}');
+      print('Error Object Type: ${e.error?.runtimeType}');
+      print('Error Object: ${e.error}');
+      
+      // Handle different error types
+      if (e.error != null && e.error is ApiException) {
+        throw e.error as ApiException;
+      } else if (e.error != null && e.error is DioException) {
+        // This is a nested DioException, handle it properly
+        final nestedError = e.error as DioException;
+        throw _handleDioException(nestedError);
+      } else {
+        // If there's no error in the DioException, convert it ourselves
+        throw _handleDioException(e);
+      }
+    } on TypeError catch (e) {
+      // This handles the case where the cast fails
+      print('=== TYPE ERROR IN API CLIENT ===');
+      print('Error: $e');
+      print('Stack trace: ${StackTrace.current}');
+      throw const UnknownException(message: 'Internal error occurred');
+    } catch (e) {
+      // Catch any other errors
+      print('=== UNEXPECTED ERROR IN POST ===');
+      print('Error: $e');
+      print('Stack trace: ${StackTrace.current}');
+      throw const UnknownException(message: 'Unexpected error occurred');
     }
   }
 

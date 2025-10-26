@@ -9,8 +9,6 @@ import '../bloc/home_state.dart';
 import '../bloc/home_event.dart';
 import '../widgets/featured_service_card.dart';
 import '../widgets/service_category_card.dart';
-import '../widgets/halls_widget.dart';
-import '../widgets/quick_booking_widget.dart';
 import '../widgets/search_bar_widget.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../quick_access/presentation/pages/quick_access_page.dart';
@@ -139,28 +137,6 @@ class HomeContent extends StatelessWidget {
                   ),
                 ),
 
-                // --- Quick Booking Widget ---
-                if (!state.isSearching)
-                  const SliverToBoxAdapter(
-                    child: QuickBookingWidget(),
-                  ),
-
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppConstants.spacingLG),
-                ),
-
-                // --- Featured Halls Widget ---
-                if (!state.isSearching && state.featuredHalls.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: HallsWidget(
-                      halls: state.featuredHalls,
-                      onViewAll: () {
-                        // Navigate to all halls page
-                        // TODO: Implement all halls page
-                      },
-                    ),
-                  ),
-
                 // --- Search Bar ---
                 SliverToBoxAdapter(
                   child: Padding(
@@ -286,72 +262,8 @@ class HomeContent extends StatelessWidget {
                 ],
 
                 // --- Featured Services Section ---
-                if (!state.isSearching && state.featuredServices.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingLG,
-                      ),
-                      child: Text(
-                        'الخدمات المميزة',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: AppColors.primaryGolden,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ),
-                  ),
-
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: AppConstants.spacingMD),
-                  ),
-
-                  // --- Featured Services Carousel ---
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 280,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spacingLG,
-                        ),
-                        itemCount: state.featuredServices.length,
-                        itemBuilder: (context, index) {
-                          final service = state.featuredServices[index];
-                          return Container(
-                            width: 250,
-                            margin: const EdgeInsets.only(right: AppConstants.spacingMD),
-                            child: FeaturedServiceCard(
-                              service: service,
-                              onTap: () {
-                                // Navigate to service details page first
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => ServiceDetailsPage(
-                                      serviceId: service.id,
-                                      service: service,
-                                    ),
-                                  ),
-                                );
-                              },
-                              onBookNow: () {
-                                // Navigate directly to booking page
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => BookingPage(
-                                      serviceId: service.id,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-
+               
+                     
                 // --- Main Services Section ---
                 if (!state.isSearching) ...[
                   SliverToBoxAdapter(
@@ -379,10 +291,11 @@ class HomeContent extends StatelessWidget {
                       height: 200,
                       child: _MainFeatureCarousel(
                         onSelect: (title, subtitle) {
-                          // Navigate to booking page for quick booking
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const BookingPage(),
+                          // Just show a message or do nothing
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('$title - $subtitle'),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                         },

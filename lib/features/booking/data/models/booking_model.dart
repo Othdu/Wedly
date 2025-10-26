@@ -7,42 +7,24 @@ part 'booking_model.g.dart';
 class BookingModel {
   final int id;
   final int userId;
-  final int? hallId;
-  final int? serviceId;
+  final int? venueId;
   final DateTime eventDate;
-  final DateTime startTime;
-  final DateTime endTime;
-  final int guestCount;
-  final double totalPrice;
-  final String status; // pending, confirmed, cancelled, completed
-  final String paymentStatus; // pending, paid, failed, refunded
-  final String? specialRequests;
-  final String? notes;
-  final Map<String, dynamic>? eventDetails;
   final DateTime createdAt;
-  final DateTime updatedAt;
-  final BookingHallModel? hall;
-  final BookingServiceModel? service;
+  final double? totalPrice;
+  final String status; // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  final BookingVenueModel? venue;
+  final List<ServiceBookingModel>? serviceBookings;
 
   const BookingModel({
     required this.id,
     required this.userId,
-    this.hallId,
-    this.serviceId,
+    this.venueId,
     required this.eventDate,
-    required this.startTime,
-    required this.endTime,
-    required this.guestCount,
-    required this.totalPrice,
-    required this.status,
-    required this.paymentStatus,
-    this.specialRequests,
-    this.notes,
-    this.eventDetails,
     required this.createdAt,
-    required this.updatedAt,
-    this.hall,
-    this.service,
+    this.totalPrice,
+    required this.status,
+    this.venue,
+    this.serviceBookings,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) =>
@@ -51,19 +33,16 @@ class BookingModel {
   Map<String, dynamic> toJson() => _$BookingModelToJson(this);
 
   /// Check if booking is confirmed
-  bool get isConfirmed => status == 'confirmed';
+  bool get isConfirmed => status == 'CONFIRMED';
 
   /// Check if booking is pending
-  bool get isPending => status == 'pending';
+  bool get isPending => status == 'PENDING';
 
   /// Check if booking is cancelled
-  bool get isCancelled => status == 'cancelled';
+  bool get isCancelled => status == 'CANCELLED';
 
   /// Check if booking is completed
-  bool get isCompleted => status == 'completed';
-
-  /// Check if payment is completed
-  bool get isPaid => paymentStatus == 'paid';
+  bool get isCompleted => status == 'COMPLETED';
 
   /// Get formatted event date
   String get formattedEventDate {
@@ -74,53 +53,55 @@ class BookingModel {
     return '${eventDate.day} ${months[eventDate.month - 1]} ${eventDate.year}';
   }
 
-  /// Get formatted time range
-  String get formattedTimeRange {
-    final start = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
-    final end = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
-    return '$start - $end';
-  }
-
   /// Get formatted total price
-  String get formattedTotalPrice => '${totalPrice.toStringAsFixed(0)} جنيه';
+  String get formattedTotalPrice => '${(totalPrice ?? calculatedTotal).toStringAsFixed(2)} جنيه';
 
   /// Get booking title
   String get title {
-    if (hall != null) return hall!.name;
-    if (service != null) return service!.name;
+    if (venue != null) return venue!.name;
     return 'حجز';
   }
 
   /// Get booking subtitle
   String get subtitle {
-    return '$formattedEventDate في $formattedTimeRange';
+    return venue?.address ?? 'الموقع غير محدد';
+  }
+  
+  /// Calculate total from venue and services
+  double get calculatedTotal {
+    final venuePrice = venue?.pricePerDay ?? 0.0;
+    final servicesTotal = serviceBookings?.fold<double>(
+      0.0,
+      (sum, serviceBooking) => sum + (serviceBooking.quantity * serviceBooking.price),
+    ) ?? 0.0;
+    return venuePrice + servicesTotal;
   }
 }
 
-/// Booking hall model (simplified hall info for bookings)
+/// Booking venue model (simplified venue info for bookings)
 @JsonSerializable()
-class BookingHallModel {
+class BookingVenueModel {
   final int id;
   final String name;
-  final String location;
+  final String? address;
   final String? image;
-  final double price;
+  final double pricePerDay;
 
-  const BookingHallModel({
+  const BookingVenueModel({
     required this.id,
     required this.name,
-    required this.location,
+    this.address,
     this.image,
-    required this.price,
+    required this.pricePerDay,
   });
 
-  factory BookingHallModel.fromJson(Map<String, dynamic> json) =>
-      _$BookingHallModelFromJson(json);
+  factory BookingVenueModel.fromJson(Map<String, dynamic> json) =>
+      _$BookingVenueModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$BookingHallModelToJson(this);
+  Map<String, dynamic> toJson() => _$BookingVenueModelToJson(this);
 }
 
-/// Booking service model (simplified service info for bookings)
+/// Booking service model (for service bookings in a booking)
 @JsonSerializable()
 class BookingServiceModel {
   final int id;
@@ -143,29 +124,38 @@ class BookingServiceModel {
   Map<String, dynamic> toJson() => _$BookingServiceModelToJson(this);
 }
 
+/// Service booking model (services added to a booking)
+@JsonSerializable()
+class ServiceBookingModel {
+  final int id;
+  final BookingServiceModel service;
+  final int quantity;
+  final double price;
+
+  const ServiceBookingModel({
+    required this.id,
+    required this.service,
+    required this.quantity,
+    required this.price,
+  });
+
+  factory ServiceBookingModel.fromJson(Map<String, dynamic> json) =>
+      _$ServiceBookingModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ServiceBookingModelToJson(this);
+}
+
 /// Create booking request model
 @JsonSerializable()
 class CreateBookingRequest {
-  final int? hallId;
-  final int? serviceId;
+  final int venueId;
+  final List<int>? serviceIds;
   final DateTime eventDate;
-  final DateTime startTime;
-  final DateTime endTime;
-  final int guestCount;
-  final String? specialRequests;
-  final String? notes;
-  final Map<String, dynamic>? eventDetails;
 
   const CreateBookingRequest({
-    this.hallId,
-    this.serviceId,
+    required this.venueId,
+    this.serviceIds,
     required this.eventDate,
-    required this.startTime,
-    required this.endTime,
-    required this.guestCount,
-    this.specialRequests,
-    this.notes,
-    this.eventDetails,
   });
 
   factory CreateBookingRequest.fromJson(Map<String, dynamic> json) =>
@@ -177,22 +167,14 @@ class CreateBookingRequest {
 /// Update booking request model
 @JsonSerializable()
 class UpdateBookingRequest {
+  final int? venueId;
+  final List<int>? serviceIds;
   final DateTime? eventDate;
-  final DateTime? startTime;
-  final DateTime? endTime;
-  final int? guestCount;
-  final String? specialRequests;
-  final String? notes;
-  final Map<String, dynamic>? eventDetails;
 
   const UpdateBookingRequest({
+    this.venueId,
+    this.serviceIds,
     this.eventDate,
-    this.startTime,
-    this.endTime,
-    this.guestCount,
-    this.specialRequests,
-    this.notes,
-    this.eventDetails,
   });
 
   factory UpdateBookingRequest.fromJson(Map<String, dynamic> json) =>
@@ -207,12 +189,8 @@ class Booking {
   final String title;
   final String subtitle;
   final String status;
-  final String paymentStatus;
   final String totalPrice;
   final String eventDate;
-  final String timeRange;
-  final int guestCount;
-  final String? specialRequests;
   final String? imageUrl;
 
   const Booking({
@@ -220,12 +198,8 @@ class Booking {
     required this.title,
     required this.subtitle,
     required this.status,
-    required this.paymentStatus,
     required this.totalPrice,
     required this.eventDate,
-    required this.timeRange,
-    required this.guestCount,
-    this.specialRequests,
     this.imageUrl,
   });
 
@@ -235,13 +209,9 @@ class Booking {
       title: model.title,
       subtitle: model.subtitle,
       status: model.status,
-      paymentStatus: model.paymentStatus,
       totalPrice: model.formattedTotalPrice,
       eventDate: model.formattedEventDate,
-      timeRange: model.formattedTimeRange,
-      guestCount: model.guestCount,
-      specialRequests: model.specialRequests,
-      imageUrl: model.hall?.image ?? model.service?.image ?? 'assets/images/logo.png',
+      imageUrl: model.venue?.image ?? 'assets/images/logo.png',
     );
   }
 

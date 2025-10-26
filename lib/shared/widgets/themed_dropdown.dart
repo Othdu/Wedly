@@ -127,11 +127,53 @@ class RoleDropdown extends StatelessWidget {
       prefixIcon: Icons.work_outline,
       validator: validator,
       items: const [
-        DropdownMenuItem(value: 'User', child: Text('يوزر')),
-        DropdownMenuItem(value: 'Owner', child: Text('اونر')),
-        DropdownMenuItem(value: 'Admin', child: Text('ادمن')),
-        DropdownMenuItem(value: 'Service provider', child: Text('سيرفس بروفايدر')),
+        DropdownMenuItem(value: 'USER', child: Text('يوزر')),
+        DropdownMenuItem(value: 'OWNER', child: Text('اونر')),
+        DropdownMenuItem(value: 'ADMIN', child: Text('ادمن')),
+        DropdownMenuItem(value: 'SERVICE', child: Text('مزود خدمات')),
       ],
+      onChanged: onChanged,
+    );
+  }
+}
+
+/// Business Type Dropdown Widget
+/// Shows available business categories for service providers
+class BusinessTypeDropdown extends StatelessWidget {
+  final String? value;
+  final ValueChanged<String?>? onChanged;
+  final String? Function(String?)? validator;
+
+  const BusinessTypeDropdown({
+    super.key,
+    this.value,
+    this.onChanged,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Business types matching the backend BusinessType model
+    final businessTypes = const [
+      DropdownMenuItem(value: 'HALL', child: Text('قاعة أفراح')),
+      DropdownMenuItem(value: 'MAKEUP', child: Text('فنان تجميل')),
+      DropdownMenuItem(value: 'ATELIER', child: Text('أتيليه')),
+      DropdownMenuItem(value: 'PHOTOGRAPHY', child: Text('تصوير وفيديو')),
+      DropdownMenuItem(value: 'SUIT', child: Text('تأجير بدل')),
+      DropdownMenuItem(value: 'DECOR', child: Text('ديكور وتصميم')),
+      DropdownMenuItem(value: 'MUSIC', child: Text('موسيقى وترفيه')),
+      DropdownMenuItem(value: 'CARS', child: Text('سيارات أفراح')),
+      DropdownMenuItem(value: 'CATERING', child: Text('ضيافة واستقبال')),
+      DropdownMenuItem(value: 'VIDEO', child: Text('إنتاج فيديو')),
+      // Note: NONE is excluded as it's not a valid business type for registration
+    ];
+
+    return ThemedDropdown<String>(
+      value: value,
+      label: 'نوع النشاط التجاري',
+      prefixIcon: Icons.store_outlined,
+      validator: validator,
+      items: businessTypes,
       onChanged: onChanged,
     );
   }

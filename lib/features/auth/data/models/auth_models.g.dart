@@ -42,6 +42,7 @@ RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) =>
       phone: json['phone'] as String,
       gender: json['gender'] as String,
       role: json['role'] as String,
+      businessType: json['business_type'] as String?,
     );
 
 Map<String, dynamic> _$RegisterRequestToJson(RegisterRequest instance) =>
@@ -55,49 +56,58 @@ Map<String, dynamic> _$RegisterRequestToJson(RegisterRequest instance) =>
       'phone': instance.phone,
       'gender': instance.gender,
       'role': instance.role,
+      if (instance.businessType case final value?) 'business_type': value,
     };
 
 RegisterResponse _$RegisterResponseFromJson(Map<String, dynamic> json) =>
     RegisterResponse(
+      id: (json['id'] as num?)?.toInt(),
       username: json['username'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String,
       gender: json['gender'] as String,
       role: json['role'] as String,
       businessType: json['business_type'] as String,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
     );
 
 Map<String, dynamic> _$RegisterResponseToJson(RegisterResponse instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'username': instance.username,
       'email': instance.email,
       'phone': instance.phone,
       'gender': instance.gender,
       'role': instance.role,
       'business_type': instance.businessType,
+      'first_name': instance.firstName,
+      'last_name': instance.lastName,
     };
 
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       email: json['email'] as String,
-      firstName: json['firstName'] as String? ?? json['first_name'] as String? ?? '',
-      lastName: json['lastName'] as String? ?? json['last_name'] as String? ?? '',
+      username: json['username'] as String?,
+      firstName: json['firstName'] as String,
+      lastName: json['lastName'] as String,
       phone: json['phone'] as String?,
-      profileImage: json['profileImage'] as String? ?? json['profile_image'] as String?,
-      isActive: json['isActive'] as bool? ?? json['is_active'] as bool? ?? true,
-      isVerified: json['isVerified'] as bool? ?? json['is_verified'] as bool? ?? false,
+      profileImage: json['profileImage'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+      isVerified: json['isVerified'] as bool? ?? false,
       dateJoined: json['dateJoined'] == null
           ? null
           : DateTime.parse(json['dateJoined'] as String),
       lastLogin: json['lastLogin'] == null
           ? null
           : DateTime.parse(json['lastLogin'] as String),
-      userType: json['userType'] as String? ?? json['user_type'] as String?,
+      userType: json['userType'] as String?,
     );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'id': instance.id,
       'email': instance.email,
+      'username': instance.username,
       'firstName': instance.firstName,
       'lastName': instance.lastName,
       'phone': instance.phone,
@@ -109,72 +119,62 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'userType': instance.userType,
     };
 
-User _$UserFromJson(Map<String, dynamic> json) => User(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
-      phone: json['phone'] as String?,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-    );
-
-Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
-      'id': instance.id,
-      'email': instance.email,
-      'firstName': instance.firstName,
-      'lastName': instance.lastName,
-      'phone': instance.phone,
-      'createdAt': instance.createdAt?.toIso8601String(),
-    };
-
-PasswordResetRequest _$PasswordResetRequestFromJson(Map<String, dynamic> json) =>
+PasswordResetRequest _$PasswordResetRequestFromJson(
+        Map<String, dynamic> json) =>
     PasswordResetRequest(
       email: json['email'] as String,
     );
 
-Map<String, dynamic> _$PasswordResetRequestToJson(PasswordResetRequest instance) =>
+Map<String, dynamic> _$PasswordResetRequestToJson(
+        PasswordResetRequest instance) =>
     <String, dynamic>{
       'email': instance.email,
     };
 
-PasswordResetConfirmRequest _$PasswordResetConfirmRequestFromJson(Map<String, dynamic> json) =>
+PasswordResetConfirmRequest _$PasswordResetConfirmRequestFromJson(
+        Map<String, dynamic> json) =>
     PasswordResetConfirmRequest(
       token: json['token'] as String,
-      newPassword: json['new_password'] as String,
+      newPassword: json['newPassword'] as String,
     );
 
-Map<String, dynamic> _$PasswordResetConfirmRequestToJson(PasswordResetConfirmRequest instance) =>
+Map<String, dynamic> _$PasswordResetConfirmRequestToJson(
+        PasswordResetConfirmRequest instance) =>
     <String, dynamic>{
       'token': instance.token,
-      'new_password': instance.newPassword,
+      'newPassword': instance.newPassword,
     };
 
-ChangePasswordRequest _$ChangePasswordRequestFromJson(Map<String, dynamic> json) =>
+ChangePasswordRequest _$ChangePasswordRequestFromJson(
+        Map<String, dynamic> json) =>
     ChangePasswordRequest(
-      currentPassword: json['current_password'] as String,
-      newPassword: json['new_password'] as String,
+      currentPassword: json['currentPassword'] as String,
+      newPassword: json['newPassword'] as String,
     );
 
-Map<String, dynamic> _$ChangePasswordRequestToJson(ChangePasswordRequest instance) =>
+Map<String, dynamic> _$ChangePasswordRequestToJson(
+        ChangePasswordRequest instance) =>
     <String, dynamic>{
-      'current_password': instance.currentPassword,
-      'new_password': instance.newPassword,
+      'currentPassword': instance.currentPassword,
+      'newPassword': instance.newPassword,
     };
 
-UpdateProfileRequest _$UpdateProfileRequestFromJson(Map<String, dynamic> json) =>
+UpdateProfileRequest _$UpdateProfileRequestFromJson(
+        Map<String, dynamic> json) =>
     UpdateProfileRequest(
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
       phone: json['phone'] as String?,
-      profileImage: json['profile_image'] as String?,
+      profileImage: json['profileImage'] as String?,
+      username: json['username'] as String?,
     );
 
-Map<String, dynamic> _$UpdateProfileRequestToJson(UpdateProfileRequest instance) =>
+Map<String, dynamic> _$UpdateProfileRequestToJson(
+        UpdateProfileRequest instance) =>
     <String, dynamic>{
-      'first_name': instance.firstName,
-      'last_name': instance.lastName,
+      'firstName': instance.firstName,
+      'lastName': instance.lastName,
       'phone': instance.phone,
-      'profile_image': instance.profileImage,
+      'profileImage': instance.profileImage,
+      'username': instance.username,
     };

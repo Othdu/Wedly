@@ -51,5 +51,10 @@
 	<!-- Location usage descriptions for iOS permission prompt -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app uses your location to improve nearby services and ads relevance.</string>
+	<!-- Camera and Photo Library permissions for iOS -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to update your profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select a profile picture.</string>
 </dict>
 </plist>

@@ -1,13 +1,14 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/theme_cubit.dart';
-import '../../../../core/utils/storage_service.dart';
-import 'onboarding_page.dart';
-import '../../../home/presentation/pages/home_page.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -64,43 +65,58 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _startSequence() async {
     await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
     _logoController.forward();
     await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
     _textController.forward();
     await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
     await _requestPermissions();
+    if (!mounted) return;
     await _navigateNext();
   }
 
   Future<void> _requestPermissions() async {
+    if (!mounted) return;
     // Request location permissions if not granted
     final statusFine = await Permission.locationWhenInUse.status;
+    if (!mounted) return;
     if (!statusFine.isGranted && !statusFine.isPermanentlyDenied) {
       await Permission.locationWhenInUse.request();
     }
   }
 
   Future<void> _navigateNext() async {
-    final storageService = await StorageService.getInstance();
-    final isOnboardingCompleted =
-        await storageService.isOnboardingCompleted();
+    if (!mounted) return;
+    
+    final authBloc = context.read<AuthBloc>();
+
+    // Initialize auth state
+    authBloc.add(const AuthInitialized());
+
+    // Wait for auth state to update
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 700),
-        pageBuilder: (_, a, __) => FadeTransition(
-          opacity: a,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 1.1, end: 1.0).animate(a),
-            child: isOnboardingCompleted
-                ? const HomePage()
-                : const OnboardingPage(),
-          ),
-        ),
-      ),
-    );
+    // Check authentication status
+    final currentAuthState = authBloc.state;
+    
+    if (!mounted) return;
+    
+    if (currentAuthState is AuthAuthenticated) {
+      // User is logged in - go directly to home
+      if (mounted && context.mounted) {
+        context.go(AppConstants.routeHome);
+      }
+    } else {
+      // User is not logged in - always show login first
+      // Onboarding will be shown after login if it's first time
+      if (mounted && context.mounted) {
+        context.go(AppConstants.routeLogin);
+      }
+    }
   }
 
   @override

@@ -69,6 +69,14 @@ class ValidationException extends ApiException {
   });
 }
 
+/// Forbidden exceptions (505)
+class BadGatewayException extends ApiException {
+  const BadGatewayException({
+    super.message = 'خطأ في البوابة، حاول مرة أخرى',
+    super.statusCode = 505,
+    super.details,
+  });
+}
 /// Timeout exceptions
 class TimeoutException extends ApiException {
   const TimeoutException({
@@ -161,14 +169,45 @@ class ApiExceptionFactory {
       if (response.containsKey('errors')) {
         final errors = response['errors'];
         if (errors is Map<String, dynamic>) {
-          // Get first error message
-          final firstError = errors.values.first;
-          if (firstError is List && firstError.isNotEmpty) {
-            return firstError.first.toString();
+          // Get all error messages
+          final errorMessages = <String>[];
+          for (final entry in errors.entries) {
+            final field = entry.key;
+            final errorValue = entry.value;
+            
+            if (errorValue is List && errorValue.isNotEmpty) {
+              errorMessages.add('$field: ${errorValue.first}');
+            } else if (errorValue is String) {
+              errorMessages.add('$field: $errorValue');
+            } else {
+              errorMessages.add('$field: $errorValue');
+            }
           }
-          return firstError.toString();
+          
+          if (errorMessages.isNotEmpty) {
+            return errorMessages.join('\n');
+          }
+          
+          return errors.toString();
         }
         return errors.toString();
+      }
+      
+      // Try to find field-specific errors
+      final fieldErrors = <String>[];
+      for (final entry in response.entries) {
+        if (entry.key != 'errors' && entry.key != 'detail' && 
+            entry.key != 'message' && entry.key != 'error' &&
+            entry.value is List) {
+          final errorList = entry.value as List;
+          if (errorList.isNotEmpty) {
+            fieldErrors.add('${entry.key}: ${errorList.first}');
+          }
+        }
+      }
+      
+      if (fieldErrors.isNotEmpty) {
+        return fieldErrors.join('\n');
       }
     }
     

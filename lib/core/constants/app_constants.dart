@@ -126,6 +126,7 @@ class AppConstants {
   static const String routeLogin = '/auth/login';
   static const String routeRegister = '/auth/register';
   static const String routeForgotPassword = '/auth/forgot-password';
+  static const String routeOnboarding = '/onboarding';
   static const String routeVendors = '/vendors';
   static const String routeQuickBook = '/quick-book';
   static const String routeFavorites = '/favorites';

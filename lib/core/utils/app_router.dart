@@ -5,9 +5,8 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../shared/widgets/main_navigation_wrapper.dart';
-import '../../features/feedback/feedback_page.dart';
 import '../../features/onboarding/presentation/pages/splash_screen.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../constants/app_constants.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
@@ -49,59 +48,18 @@ class AppRouter {
         builder: (context, state) => const SplashScreen(),
       ),
       
-      // Main Navigation Wrapper
-      ShellRoute(
-        builder: (context, state, child) {
-          return MainNavigationWrapper(child: child);
-        },
-        routes: [
-          // Home Route
-          GoRoute(
-            path: AppConstants.routeHome,
-            name: 'home',
-            builder: (context, state) => const HomePage(),
-          ),
-          
-          // Vendors Route
-          GoRoute(
-            path: AppConstants.routeVendors,
-            name: 'vendors',
-            builder: (context, state) => const Scaffold(
-              body: Center(
-                child: Text('Vendors Page - Coming Soon'),
-              ),
-            ),
-          ),
-          
-          // Quick Book Route
-          GoRoute(
-            path: AppConstants.routeQuickBook,
-            name: 'quick-book',
-            builder: (context, state) => const Scaffold(
-              body: Center(
-                child: Text('Quick Book Page - Coming Soon'),
-              ),
-            ),
-          ),
-          
-          // Feedback Route
-          GoRoute(
-            path: AppConstants.routeFeedback,
-            name: 'feedback',
-            builder: (context, state) => const FeedbackPage(),
-          ),
-          
-          // Profile Route
-          GoRoute(
-            path: AppConstants.routeProfile,
-            name: 'profile',
-            builder: (context, state) => const Scaffold(
-              body: Center(
-                child: Text('Profile Page - Coming Soon'),
-              ),
-            ),
-          ),
-        ],
+      // Onboarding Route
+      GoRoute(
+        path: AppConstants.routeOnboarding,
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      
+      // Home Route
+      GoRoute(
+        path: AppConstants.routeHome,
+        name: 'home',
+        builder: (context, state) => const HomePage(),
       ),
       
       // Authentication Routes (Outside main navigation)
